@@ -19,15 +19,12 @@ cron;
 // Database connection (Ensure you connect to your DB before the app starts)
 connectDB();
 
-const allowedOrigins = [
-  'https://unity-women.vercel.app',
-];
 
 const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: 'https://unity-women.vercel.app',
   credentials: true,
 }));
 
@@ -47,11 +44,7 @@ const Review = mongoose.model('Review', reviewSchema); // Create the Review mode
 
 const PORT = process.env.PORT || 5000;
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', allowedOrigins);
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+
 
 app.use('/api/users', userRoutes);
 app.use('/api/todos', todoRoutes);
