@@ -15,7 +15,7 @@ const authUser = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    const referralLink = `http://localhost:3000/register?referral=${user.referralCode}`;
+    const referralLink = `https://unity-women.vercel.app/register?referral=${user.referralCode}`;
 
     if (user && (await user.parolaKontrol(password))) {
       generateToken(res, user._id);
@@ -115,7 +115,7 @@ const registerUser = async (req, res) => {
     if (user) {
       generateToken(res, user._id);
 
-      const referralLink = `http://localhost:3000/register?referral=${referralCode}`;
+      const referralLink = `https://unity-women.vercel.app/register?referral=${referralCode}`;
 
 
       res.status(201).json({

@@ -20,7 +20,7 @@ cron;
 connectDB();
 
 const allowedOrigins = [
-  'http://localhost:3000',
+  'https://unity-women.vercel.app',
 ];
 
 const app = express();
