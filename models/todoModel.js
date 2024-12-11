@@ -17,6 +17,13 @@ const todoSchema = mongoose.Schema(
       type: String,
   
     },
+    stock: {
+      type: Number,
+    },
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Todo",
+    },
     photo: {
       type: String, // base64 encoded ucun string qebul edir
        

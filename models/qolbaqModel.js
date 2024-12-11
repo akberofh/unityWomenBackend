@@ -7,18 +7,19 @@ const qolbaqModel = mongoose.Schema({
   description: {
     type: String,
   },
-  thumbnail :{
+  thumbnail: {
     type: String,
 
   },
   photo: {
     type: String, // base64 encoded ucun string qebul edir
-     
+
   },
-  stock: { 
-    type: Number, 
+  stock: {
+    type: Number,
     required: true,
-     default: 0 }, 
+    default: 0
+  },
   price: {
     type: Number,
   },

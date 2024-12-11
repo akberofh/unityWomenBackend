@@ -8,12 +8,10 @@ const addUserProduct = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    // Kullanıcı doğrulama
     if (!req.user) {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
-    // Ürünü QolbaqModel'den bul
     const product = await QolbaqModel.findById(productId);
     if (!product) {
       return res.status(404).json({ error: 'Ürün bulunamadı' });

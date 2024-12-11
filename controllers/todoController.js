@@ -1,32 +1,59 @@
+import QolbaqModel from "../models/qolbaqModel.js";
 import Todo from "../models/todoModel.js";
 
 const addUserTodo = async (req, res) => {
   try {
-    const { title, description,price,thumbnail } = req.body;
-
-    let photo = '';
-
-    // Eğer bir fotoğraf dosyası mevcutsa base64 olarak dönüştür
-    if (req.file) {
-      photo = req.file.buffer.toString('base64');
+    const { productId } = req.body;
+    
+    // Kullanıcı doğrulama
+    if (!req.user) {
+      return res.status(401).json({ message: 'Kullanıcı doğrulanamadı. Lütfen giriş yapın.' });
     }
 
-    if (req.user) {
-      const todo = await Todo.create({
-        title,
-        description,price,thumbnail ,
-         photo,
-        user_id: req.user._id,
-      });
-
-      res.status(201).json(todo);
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    // Ürünü kontrol et
+    const product = await QolbaqModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Ürün bulunamadı.' });
     }
+
+    // Kullanıcının bu ürünü daha önce ekleyip eklemediğini kontrol et
+    const existingProduct = await Todo.findOne({
+      productId: product._id,
+      user_id: req.user._id,
+    });
+
+    if (existingProduct) {
+      return res.status(400).json({ message: 'Bu ürün zaten listenize eklenmiş.' });
+    }
+
+    // Yeni todo öğesi oluştur
+    const newTodo = new Todo({
+      user_id: req.user._id,
+      productId: product._id,
+      title: product.title,
+      catagory: product.catagory,
+      stock: product.stock,
+      thumbnail: product.thumbnail,
+      photo: product.photo,
+      price: product.price,
+      totalPrice: product.price, // İlk miktar fiyatla aynı
+    });
+
+    // Yeni öğeyi kaydet
+    await newTodo.save();
+
+    // Başarılı yanıt
+    return res.status(201).json({
+      message: 'Ürün başarıyla eklendi.',
+      todo: newTodo,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Hata yönetimi
+    return res.status(500).json({ message: 'Bir hata oluştu.', error: error.message });
   }
 };
+
+
 
 const getUserTodos = async (req, res) => {
     try {

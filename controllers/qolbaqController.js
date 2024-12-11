@@ -119,4 +119,20 @@ const deleteById = async (req, res) => {
   }
 };
 
-export { qolbaqAdd, getQolbaq, getByIdQolbaq, deleteById, qolbaqUpdate };
+const getByCategoryQolbaq = async (req, res) => {
+  const { catagory } = req.params;
+  try {
+      const filteredQolbaq = await QolbaqModel.find({ catagory });
+      if (!filteredQolbaq.length) {
+          return res.status(404).json({ error: "Ürün bulunamadı" });
+      }
+      res.json({ allQolbaq: filteredQolbaq });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+export { qolbaqAdd, getQolbaq, getByIdQolbaq, deleteById, getByCategoryQolbaq, qolbaqUpdate };

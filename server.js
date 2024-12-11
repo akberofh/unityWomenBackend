@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes.js';
 import todoRoutes from './routes/todoRoute.js';
+import catagoryRoutes from './routes/catagoryRouter.js'
 import qolbaqRoutes from './routes/qolbaqRoute.js';
 import productRoutes from './routes/productRoute.js';
 import connectDB from './config/db.js';
@@ -24,7 +25,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://unity-women.vercel.app',
+  origin: 'http://localhost:3000',
   credentials: true,
 }));
 
@@ -48,6 +49,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use('/api/users', userRoutes);
 app.use('/api/todos', todoRoutes);
+app.use('/api/catagory', catagoryRoutes);
 app.use('/api', ConfirmedCart);
 app.use('/api/qolbaq', qolbaqRoutes);
 app.use('/api/product', productRoutes);
@@ -93,6 +95,28 @@ app.delete('/api/reviews/:id', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+app.get('/api/reviews/:catagory', async (req, res) => {
+  const { catagory } = req.params;
+  try {
+    // RegExp kullanarak büyük/küçük harf duyarsız arama
+    const filteredReviews = await Review.find({ 
+      catagory: { $regex: new RegExp(`^${catagory}$`, 'i') } // 'i' harfi case-insensitive yapar
+    });
+
+    if (!filteredReviews.length) {
+      return res.status(404).json({ error: "Ürün bulunamadı" });
+    }
+
+    res.json({ reviews: filteredReviews });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

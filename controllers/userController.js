@@ -12,8 +12,10 @@ function generateReferralCode() {
 
 const authUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { email, password, referralCode } = req.body;
+    const user = await User.findOne({
+      $or: [{ email }, { referralCode }]
+    });
 
     const referralLink = `https://unity-women.vercel.app/register?referral=${user.referralCode}`;
 
@@ -40,48 +42,47 @@ const authUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password,referralCode: referredBy , userType, adminKey , gender} = req.body;
-
+    const { name, email, password, referralCode: referredBy, userType, adminKey, gender } = req.body;
 
     if (!gender || !['kişi', 'qadın'].includes(gender.toLowerCase())) {
       return res.status(400).json({ message: "Geçerli bir cinsiyet seçimi yapınız (kişi veya qadın)." });
     }
 
-    const referralCode = generateReferralCode();
+    let referralCode = generateReferralCode();
 
-
-        // Referans kodunun benzersizliğini kontrol et
-        let existingCode = await User.findOne({ referralCode });
-        while (existingCode) {
-          // Eğer referans kodu zaten kullanıldıysa, yeni bir kod üret
-          referralCode = generateReferralCode();
-          existingCode = await User.findOne({ referralCode }); // Tekrar kontrol et
-        }
+    // Referans kodunun benzersizliğini kontrol et
+    let existingCode = await User.findOne({ referralCode });
+    while (existingCode) {
+      referralCode = generateReferralCode();
+      existingCode = await User.findOne({ referralCode });
+    }
 
     let referralChain = [];
-
 
     if (referredBy) {
       const referrer = await User.findOne({ referralCode: referredBy });
       if (!referrer) {
         return res.status(400).json({ message: "Geçersiz referral kodu" });
       }
+
+      // Bu referral kodu ile kaç kişi kayıt olmuş kontrol et
+      const referredUsersCount = await User.countDocuments({ referredBy });
+      if (referredUsersCount >= 2) {
+        return res.status(400).json({ message: "Bu referral koduyla maksimum 2 kullanıcı kayıt olabilir." });
+      }
+
       referralChain = [...referrer.referralChain, referredBy];
     }
 
     let photo = '';
-
     if (req.file) {
       photo = req.file.buffer.toString('base64');
     }
 
     const userExists = await User.findOne({ email });
-
     if (userExists) {
-      res.status(400).json({ message: "User already exists" });
-      return;
+      return res.status(400).json({ message: "User already exists" });
     }
-
 
     if (userType === 'admin') {
       if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
@@ -89,10 +90,7 @@ const registerUser = async (req, res) => {
       }
     }
 
-
-
-    const verficationToken = Math.floor(100000 + Math.random() * 900000).toString()
-
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
       name,
@@ -100,23 +98,20 @@ const registerUser = async (req, res) => {
       photo,
       referralCode,
       referralChain,
-      referredBy, 
-      gender: gender.toLowerCase(), 
+      referredBy,
+      gender: gender.toLowerCase(),
       password,
       userType,
-      verficationToken,
-      verficationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000
-
+      verificationToken,
+      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
-    await sendVerificationEamil(user.email,verficationToken)
-
+    await sendVerificationEamil(user.email, verificationToken);
 
     if (user) {
       generateToken(res, user._id);
 
       const referralLink = `https://unity-women.vercel.app/register?referral=${referralCode}`;
-
 
       res.status(201).json({
         _id: user._id,
@@ -125,8 +120,8 @@ const registerUser = async (req, res) => {
         referralCode: user.referralCode,
         name: user.name,
         userType: user.userType,
-        gender : user.gender,
-        verficationToken: user.verficationToken,
+        gender: user.gender,
+        verificationToken: user.verificationToken,
         referralLink,
         isVerified: user.isVerified,
         referralChain: user.referralChain,
@@ -138,6 +133,7 @@ const registerUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const VerfiyEmail = async (req, res) => {
   try {
