@@ -32,6 +32,13 @@ app.use(cors({
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://unity-women.vercel.app');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 // Define the Review schema and model before using it in the routes
 const reviewSchema = new mongoose.Schema({
   rating: Number,
