@@ -13,7 +13,7 @@ router.get('/:catagory', getByCategoryQolbaq)
 
 router.post('/', upload.single('photo'), userControlAuth, adminControlAuth,  qolbaqAdd)
 
-router.get('/:id', getByIdQolbaq)
+router.get('/id/:id', getByIdQolbaq)
 
 router.delete('/:id',  deleteById)
 
