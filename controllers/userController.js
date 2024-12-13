@@ -238,6 +238,24 @@ const getUser = async (req, res) => {
   }
 };
 
+const getUserByReferralCodee = async (req, res) => {
+  try {
+    const { referralCode } = req.params;
+
+    // Kullanıcıyı ve onun referral zincirini al
+    const users = await User.find({ referralChain: referralCode });  // referralChain'deki tüm kullanıcıları getir
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Bu referans kodu ile kayıtlı kullanıcı bulunamadı" });
+    }
+
+    res.json({ users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getUserByReferralCode = async (req, res) => {
   try {
     const { referralCode } = req.params;  // referralCode URL parametresi olarak alınıyor
@@ -342,6 +360,7 @@ const processPurchase = async (userId, purchaseAmount) => {
 
 export {
   processPurchase,
+  getUserByReferralCodee,
   getUserByReferralCode,
   authUser,
   registerUser,

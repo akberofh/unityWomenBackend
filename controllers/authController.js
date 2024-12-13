@@ -32,7 +32,7 @@ export const requestPasswordReset = async (req, res) => {
       },
     });
 
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetUrl = `https://unity-women.vercel.app/reset-password/${resetToken}`;
 
     const mailOptions = {
       from: 'akberof.f313@gmail.com',

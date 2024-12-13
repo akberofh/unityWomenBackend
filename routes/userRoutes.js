@@ -9,6 +9,7 @@ import {
   getUserProfile,
   getUserByReferralCode,
   processPurchase,
+  getUserByReferralCodee,
 } from '../controllers/userController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -44,6 +45,9 @@ router.post('/auth',   authUser);
 router.post('/verifyEmail', VerfiyEmail);
 // URL: /admin/users/:referralCode
 router.get('/admin/:referralCode', getUserByReferralCode);
+
+router.get('/user/:referralCode', getUserByReferralCodee);
+
 
 router.post('/logout', logoutUser);
 router.get('/', getUser);
