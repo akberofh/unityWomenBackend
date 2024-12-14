@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema(
       required: true,
     },
     phone: {
-      type: Number,
+      type: String,
     },
     faze: {
       type: String,
