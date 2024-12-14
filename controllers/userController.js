@@ -25,6 +25,9 @@ const authUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         photo: user.photo,
+        phone: user.phone,
+        faze: user.faze,
+        maze: user.maze,
         email: user.email,
         gender : user.gender,
         userType : user.userType,
@@ -42,7 +45,7 @@ const authUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, referralCode: referredBy, userType, adminKey, gender } = req.body;
+    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender } = req.body;
 
     if (!gender || !['kişi', 'qadın'].includes(gender.toLowerCase())) {
       return res.status(400).json({ message: "Geçerli bir cinsiyet seçimi yapınız (kişi veya qadın)." });
@@ -96,6 +99,9 @@ const registerUser = async (req, res) => {
       name,
       email,
       photo,
+      phone,
+      faze,
+      maze,
       referralCode,
       referralChain,
       referredBy,
@@ -117,6 +123,9 @@ const registerUser = async (req, res) => {
         _id: user._id,
         email: user.email,
         photo: user.photo,
+        phone: user.phone,
+        faze: user.faze,
+        maze: user.maze,
         referralCode: user.referralCode,
         name: user.name,
         userType: user.userType,
@@ -181,6 +190,9 @@ const getUserProfile = async (req, res) => {
       res.json({
         _id: req.user._id,
         name: req.user.name,
+        phone: req.user.phone,
+        faze: req.user.faze,
+        maze: req.user.maze,
         email: req.user.email,
         photo: req.user.photo,
         userType: req.user.userType

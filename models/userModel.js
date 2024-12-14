@@ -15,6 +15,15 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    phone: {
+      type: Number,
+    },
+    faze: {
+      type: String,
+    },
+    maze: {
+      type: String,
+    },
     photo: {
       type: String,
     },
