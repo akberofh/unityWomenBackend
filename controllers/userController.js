@@ -348,5 +348,4 @@ export {
   getUser,
   getUserProfile,
   updateUserProfile,
-  VerfiyEmail,
 };

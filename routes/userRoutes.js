@@ -5,7 +5,6 @@ import {
   registerUser,
   logoutUser,
   updateUserProfile,
-  VerfiyEmail,
   getUserProfile,
   getUserByReferralCode,
   processPurchase,
