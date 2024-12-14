@@ -40,10 +40,6 @@ const userSchema = mongoose.Schema(
       type: String,
       unique: true, // Referans kodu benzersiz olmalı
     },
-    isVerified: {
-      type: Boolean,
-      default: false, // Kullanıcı henüz doğrulanmadı
-    },
     referredBy: { 
       type: String,
     },
@@ -60,9 +56,7 @@ const userSchema = mongoose.Schema(
         default : "user",
        },
   
-    verficationToken: { 
-      type: String,
-    },
+
     referralCount: { 
       type: Number, 
       default: 0, // Bu kullanıcı tarafından yönlendirilen kişi sayısı

@@ -42,8 +42,6 @@ router.post('/process-purchase', async (req, res) => {
 
 router.post('/register', upload.single('photo'), registerUser);
 router.post('/auth',   authUser);
-router.post('/verifyEmail', VerfiyEmail);
-// URL: /admin/users/:referralCode
 router.get('/admin/:referralCode', getUserByReferralCode);
 
 router.get('/user/:referralCode', getUserByReferralCodee);

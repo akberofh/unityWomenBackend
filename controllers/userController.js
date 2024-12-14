@@ -1,6 +1,5 @@
 import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
-import { sendVerificationEamil, senWelcomeEmail } from "../middleware/Email.js"
 import { sendEarningsEmail } from '../middleware/emailService.js';
 
 
@@ -93,7 +92,6 @@ const registerUser = async (req, res) => {
       }
     }
 
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
       name,
@@ -108,11 +106,9 @@ const registerUser = async (req, res) => {
       gender: gender.toLowerCase(),
       password,
       userType,
-      verificationToken,
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
-    await sendVerificationEamil(user.email, verificationToken);
 
     if (user) {
       generateToken(res, user._id);
@@ -130,9 +126,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         userType: user.userType,
         gender: user.gender,
-        verificationToken: user.verificationToken,
         referralLink,
-        isVerified: user.isVerified,
         referralChain: user.referralChain,
       });
     } else {
@@ -144,32 +138,7 @@ const registerUser = async (req, res) => {
 };
 
 
-const VerfiyEmail = async (req, res) => {
-  try {
-    const { verficationToken } = req.body; 
 
-    const user = await User.findOne({
-      verficationToken: verficationToken,
-      verficationTokenExpiresAt: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or Expired Code" });
-    }
-
-    user.isVerified = true;
-    user.verficationToken = undefined;
-    user.verficationTokenExpiresAt = undefined;
-    await user.save();
-
-    await senWelcomeEmail(user.email, user.name); 
-    return res.status(200).json({ success: true, message: "Email Verified Successfully" });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
-};
 
 
 const logoutUser = async (req, res) => {
