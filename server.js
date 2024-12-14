@@ -40,8 +40,9 @@ const reviewSchema = new mongoose.Schema({
   review: String,
   name: String,
   email: String,
-  catagory: String, // Corrected spelling: "catagory"
-});
+  catagory: String,
+  // Corrected spelling: "catagory"
+} ,{ timestamps: true });
 
 const Review = mongoose.model('Review', reviewSchema); // Create the Review model
 
