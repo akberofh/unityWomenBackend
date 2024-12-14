@@ -65,8 +65,6 @@ const userSchema = mongoose.Schema(
   resetPasswordExpires: Date,
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
-    verficationToken: String,
-    verficationTokenExpiresAt: Date,
   },
   { timestamps: true } // Otomatik olarak oluşturulma ve güncellenme zamanları eklenir
 );

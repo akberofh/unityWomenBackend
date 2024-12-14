@@ -106,7 +106,6 @@ const registerUser = async (req, res) => {
       gender: gender.toLowerCase(),
       password,
       userType,
-      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
 
