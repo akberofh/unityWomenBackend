@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const catagoryModel = mongoose.Schema({
   title: {
     type: String,
+    index: true, 
   },
 
   photo: {

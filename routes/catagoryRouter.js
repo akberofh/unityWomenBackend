@@ -8,9 +8,9 @@ import { catagoryAd, catagoryUpdate, deleteById, getCatagory } from "../controll
 const router = express.Router();
 
 router.get('/', getCatagory)
-router.post('/', upload.single('photo'),catagoryAd);
+router.post('/', upload.single('photo'), userControlAuth, adminControlAuth, catagoryAd);
 router.put('/:id', upload.single('photo'),  catagoryUpdate);
 
-router.delete('/:id', userControlAuth, deleteById);
+router.delete('/:id', userControlAuth, adminControlAuth, deleteById);
 
 export default router;

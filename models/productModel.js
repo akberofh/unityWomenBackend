@@ -17,6 +17,7 @@ const productSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
+      index: true, 
     },
     stock: { 
       type: Number, 

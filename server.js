@@ -10,7 +10,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import ConfirmedCart from "./routes/confimerdCartRoute.js"
 import cron from './cornJob/resertStock.js';
-import mongoose from 'mongoose';  // Import Mongoose
+import mongoose from 'mongoose';
+import paymentRoutes from './routes/paymentRoute.js'
+
 
 dotenv.config();
 
@@ -51,6 +53,7 @@ const PORT = process.env.PORT || 5000;
 
 
 app.use('/api/users', userRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api/todos', todoRoutes);
 app.use('/api/catagory', catagoryRoutes);
 app.use('/api', ConfirmedCart);

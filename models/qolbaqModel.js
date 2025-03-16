@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const qolbaqModel = mongoose.Schema({
   title: {
     type: String,
+    index: true, 
   },
   description: {
     type: String,
@@ -28,11 +29,15 @@ const qolbaqModel = mongoose.Schema({
   },
   catagory: {
     type: String,
+    index: true, 
   },
 }, {
   timestamps: true
 });
 
 const QolbaqModel = mongoose.model("Qolbaq", qolbaqModel);
+
+qolbaqModel.index({ price: 1 });
+
 
 export default QolbaqModel;

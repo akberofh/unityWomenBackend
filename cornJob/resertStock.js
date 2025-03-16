@@ -6,7 +6,7 @@ import QolbaqModel from '../models/qolbaqModel.js';
 cron.schedule('*/1 * * * *', async () => { // Her dakika çalışacak
   console.log('Cron job çalıştı ve sepetleri kontrol ediyor...');
   const oneMinuteAgo = new Date();
-  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);  // 1 dakika öncesi
+  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 5);  // 1 dakika öncesi
 
   try {
     // 'pending' ödeme durumu olan ve 1 dakikadan eski sepetleri al

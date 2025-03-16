@@ -82,7 +82,7 @@ const qolbaqUpdate = async (req, res) => {
 
 const getQolbaq = async (req, res) => {
   try {
-    const allQolbaq = await QolbaqModel.find();
+    const allQolbaq = await QolbaqModel.find().sort({ price: 1 });
     res.json({ allQolbaq });
   } catch (error) {
     console.error(error);

@@ -23,6 +23,7 @@ const todoSchema = mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Todo",
+      index: true, 
     },
     photo: {
       type: String, // base64 encoded ucun string qebul edir
@@ -30,6 +31,7 @@ const todoSchema = mongoose.Schema(
     },
     price: {
       type: Number,
+      index: true, 
     },
     distance: {
       type: String,
