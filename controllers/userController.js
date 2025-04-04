@@ -1,10 +1,7 @@
 import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
-import { sendEarningsEmail } from '../middleware/emailService.js';
-import { sendVerificationEamil, senWelcomeEmail } from "../middleware/Email.js"
 
 
-import crypto from "crypto"
 
 function generateReferralCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -151,32 +148,6 @@ const registerUser = async (req, res) => {
 
 
 
-const VerfiyEmail = async (req, res) => {
-  try {
-    const { verficationToken } = req.body; 
-
-    const user = await User.findOne({
-      verficationToken: verficationToken,
-      verficationTokenExpiresAt: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or Expired Code" });
-    }
-
-    user.isVerified = true;
-    user.verficationToken = undefined;
-    user.verficationTokenExpiresAt = undefined;
-    await user.save();
-
-    await senWelcomeEmail(user.email, user.name); 
-    return res.status(200).json({ success: true, message: "Email Verified Successfully" });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
-};
 
 
 const logoutUser = async (req, res) => {
@@ -290,81 +261,7 @@ const getUserByReferralCodee = async (req, res) => {
 
 
 
-const processPurchase = async (userId, purchaseAmount) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
 
-  let earnings = 0;
-
-  // 1. Seviye: Alışveriş yapan kullanıcıya kazanç ver
-  earnings += purchaseAmount * 0.40; // %40 kazanç
-  user.earnings += earnings;
-  await user.save();
-
-  // E-posta gönder
-  await sendEarningsEmail(user.email, earnings);
-
-  // 2. Seviye: İlk kullanıcıdan link alarak kaydolan kişi kazanç alacak
-  if (user.referralChain.length > 0) {
-    const firstLevelReferrer = await User.findOne({ referralCode: user.referralChain[0] });
-    if (firstLevelReferrer) {
-      firstLevelReferrer.earnings += purchaseAmount * 0.20; // %20 kazanç
-      await firstLevelReferrer.save();
-
-      // 2. Seviye: İlk seviyedeki kişinin referralChain'inde 2. seviye kullanıcı varsa, kazanç ver
-      if (firstLevelReferrer.referralChain.length > 0) {
-        const secondLevelReferrer = await User.findOne({ referralCode: firstLevelReferrer.referralChain[0] });
-        if (secondLevelReferrer) {
-          secondLevelReferrer.earnings += purchaseAmount * 0.10; // %10 kazanç
-          await secondLevelReferrer.save();
-
-          // 2. seviye için e-posta gönder
-          await sendEarningsEmail(secondLevelReferrer.email, purchaseAmount * 0.10);
-        }
-      }
-
-      // 3. Seviye: Zincirleme referansları takip et
-      if (firstLevelReferrer.referralChain.length > 1) {
-        const thirdLevelReferrer = await User.findOne({ referralCode: firstLevelReferrer.referralChain[1] });
-        if (thirdLevelReferrer) {
-          thirdLevelReferrer.earnings += purchaseAmount * 0.05; // %5 kazanç
-          await thirdLevelReferrer.save();
-
-          // 3. seviye için e-posta gönder
-          await sendEarningsEmail(thirdLevelReferrer.email, purchaseAmount * 0.05);
-        }
-      }
-
-      // 4. Seviye: Zincirleme referansları takip et
-      if (firstLevelReferrer.referralChain.length > 2) {
-        const fourthLevelReferrer = await User.findOne({ referralCode: firstLevelReferrer.referralChain[2] });
-        if (fourthLevelReferrer) {
-          fourthLevelReferrer.earnings += purchaseAmount * 0.03; // %3 kazanç
-          await fourthLevelReferrer.save();
-
-          // 4. seviye için e-posta gönder
-          await sendEarningsEmail(fourthLevelReferrer.email, purchaseAmount * 0.03);
-        }
-      }
-
-      // 5. Seviye: Zincirleme referansları takip et
-      if (firstLevelReferrer.referralChain.length > 3) {
-        const fifthLevelReferrer = await User.findOne({ referralCode: firstLevelReferrer.referralChain[3] });
-        if (fifthLevelReferrer) {
-          fifthLevelReferrer.earnings += purchaseAmount * 0.02; // %2 kazanç
-          await fifthLevelReferrer.save();
-
-          // 5. seviye için e-posta gönder
-          await sendEarningsEmail(fifthLevelReferrer.email, purchaseAmount * 0.02);
-        }
-      }
-    }
-  }
-
-  return 'Purchase processed and earnings distributed';
-};
 
 
 
@@ -375,7 +272,7 @@ const processPurchase = async (userId, purchaseAmount) => {
 
 
 export {
-  processPurchase,
+  
   getUserByReferralCode,
   getUserByReferralCodee,
   authUser,
@@ -384,5 +281,4 @@ export {
   getUser,
   getUserProfile,
   updateUserProfile,
-  VerfiyEmail,
 };
