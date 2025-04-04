@@ -117,7 +117,6 @@ const registerUser = async (req, res) => {
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
-    await sendVerificationEamil(user.email, verificationToken);
 
     if (user) {
       generateToken(res, user._id);
