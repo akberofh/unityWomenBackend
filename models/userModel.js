@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import validator from 'validator'; 
 
 const userSchema = mongoose.Schema(
   {
@@ -9,7 +10,7 @@ const userSchema = mongoose.Schema(
     },
     email: {
       type: String,
-      unique: true, 
+      unique: true,
     },
     password: {
       type: String,
@@ -21,63 +22,73 @@ const userSchema = mongoose.Schema(
     faze: {
       type: String,
     },
-    maze: {
-      type: String,
-    },
     photo: {
       type: String,
+    },
+    finCode: {
+      type: String,
+    },
+    card: {
+      type: Number,
     },
     referralLink: {
       type: String,
     },
-   
     gender: {
       type: String,
       required: true,
-      enum: ['kişi', 'qadın'], // Sadece 'male' ve 'female' değerlerine izin verilir
+      enum: ['kişi', 'qadın'], 
     },
     referralCode: {
       type: String,
-      unique: true, // Referans kodu benzersiz olmalı
+      unique: true, 
     },
-    referredBy: { 
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    referredBy: {
       type: String,
     },
     referralChain: {
-      type: [String], // Üst kademelerdeki tüm referans kodlarını saklamak için bir dizi
+      type: [String],
       default: [],
     },
-    earnings: { 
+    earnings: {
       type: Number,
-       default: 0
-       },
-       userType: {
-        type: String,
-        default : "user",
-       },
-  
+      default: 0
+    },
+    userType: {
+      type: String,
+      default: "user",
+    },
 
-    referralCount: { 
-      type: Number, 
-      default: 0, // Bu kullanıcı tarafından yönlendirilen kişi sayısı
+    verficationToken: {
+      type: String,
+    },
+    referralCount: {
+      type: Number,
+      default: 0, 
     },
     resetPasswordToken: String,
-  resetPasswordExpires: Date,
+    resetPasswordExpires: Date,
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
+    verficationToken: String,
+    verficationTokenExpiresAt: Date,
   },
-  { timestamps: true } // Otomatik olarak oluşturulma ve güncellenme zamanları eklenir
+  { timestamps: true } 
 );
 
-// Şifreyi hash'leme işlemi, kullanıcı kaydedilmeden önce yapılır
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    return next(); // Eğer şifre değişmemişse, işlemi geçiyoruz
+    return next();
   }
 
   try {
-    const salt = await bcrypt.genSalt(10); // 10 rounds ile salt oluşturuluyor
-    this.password = await bcrypt.hash(this.password, salt); // Şifreyi hashliyoruz
+    const salt = await bcrypt.genSalt(10); 
+    this.password = await bcrypt.hash(this.password, salt); 
     next(); // İşlem başarıyla tamamlandı
   } catch (error) {
     next(error); // Eğer bir hata oluşursa, hatayı geçiyoruz
@@ -85,7 +96,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Şifre kontrol fonksiyonu
-userSchema.methods.parolaKontrol = async function(girilenParola) {
+userSchema.methods.parolaKontrol = async function (girilenParola) {
   try {
     return await bcrypt.compare(girilenParola, this.password); // Girilen şifreyi veritabanındaki hash ile karşılaştırıyoruz
   } catch (error) {
@@ -102,6 +113,15 @@ userSchema.pre("save", function (next) {
   }
   next();
 });
+
+userSchema.pre('save', function (next) {
+  // Telefon numarasını + ile başlayacak şekilde formatlayalım
+  if (this.phone && !this.phone.startsWith('+')) {
+    this.phone = `+${this.phone.replace(/\D/g, '')}`; // Sadece rakamları al ve başına '+' ekle
+  }
+  next();
+});
+
 
 const User = mongoose.model('User', userSchema); // Modeli oluşturuyoruz
 

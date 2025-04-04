@@ -1,13 +1,17 @@
 import User from "../models/userModel.js";
 import generateToken from "../utils/generateToken.js";
 import { sendEarningsEmail } from '../middleware/emailService.js';
+import { sendVerificationEamil, senWelcomeEmail } from "../middleware/Email.js"
 
 
 import crypto from "crypto"
 
 function generateReferralCode() {
-  return crypto.randomBytes(6).toString('hex'); 
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
+
+console.log(generateReferralCode());
+
 
 const authUser = async (req, res) => {
   try {
@@ -24,9 +28,8 @@ const authUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         photo: user.photo,
-        phone: user.phone,
-        faze: user.faze,
-        maze: user.maze,
+        finCode: user.finCode,
+        Card: user.Card,
         email: user.email,
         gender : user.gender,
         userType : user.userType,
@@ -44,7 +47,7 @@ const authUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender } = req.body;
+    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender,Card,FinCode } = req.body;
 
     if (!gender || !['kişi', 'qadın'].includes(gender.toLowerCase())) {
       return res.status(400).json({ message: "Geçerli bir cinsiyet seçimi yapınız (kişi veya qadın)." });
@@ -66,15 +69,16 @@ const registerUser = async (req, res) => {
       if (!referrer) {
         return res.status(400).json({ message: "Geçersiz referral kodu" });
       }
-
-      // Bu referral kodu ile kaç kişi kayıt olmuş kontrol et
+    
       const referredUsersCount = await User.countDocuments({ referredBy });
+    
       if (referredUsersCount >= 2) {
-        return res.status(400).json({ message: "Bu referral koduyla maksimum 2 kullanıcı kayıt olabilir." });
+        return res.status(400).json({ message: "Bu referral koduyla maksimum 2 kullanıcı kayıt olabilir. Lütfen başka bir referral kodu giriniz." });
       }
-
+    
       referralChain = [...referrer.referralChain, referredBy];
     }
+    
 
     let photo = '';
     if (req.file) {
@@ -92,6 +96,7 @@ const registerUser = async (req, res) => {
       }
     }
 
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
       name,
@@ -100,14 +105,19 @@ const registerUser = async (req, res) => {
       phone,
       faze,
       maze,
+      Card,
+      FinCode,
       referralCode,
       referralChain,
       referredBy,
       gender: gender.toLowerCase(),
       password,
       userType,
+      verificationToken,
+      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
+    await sendVerificationEamil(user.email, verificationToken);
 
     if (user) {
       generateToken(res, user._id);
@@ -120,12 +130,16 @@ const registerUser = async (req, res) => {
         photo: user.photo,
         phone: user.phone,
         faze: user.faze,
+        FinCode: user.FinCode,
+        Card: user.Card,
         maze: user.maze,
         referralCode: user.referralCode,
         name: user.name,
         userType: user.userType,
         gender: user.gender,
+        verificationToken: user.verificationToken,
         referralLink,
+        isVerified: user.isVerified,
         referralChain: user.referralChain,
       });
     } else {
@@ -138,6 +152,32 @@ const registerUser = async (req, res) => {
 
 
 
+const VerfiyEmail = async (req, res) => {
+  try {
+    const { verficationToken } = req.body; 
+
+    const user = await User.findOne({
+      verficationToken: verficationToken,
+      verficationTokenExpiresAt: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or Expired Code" });
+    }
+
+    user.isVerified = true;
+    user.verficationToken = undefined;
+    user.verficationTokenExpiresAt = undefined;
+    await user.save();
+
+    await senWelcomeEmail(user.email, user.name); 
+    return res.status(200).json({ success: true, message: "Email Verified Successfully" });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
 
 
 const logoutUser = async (req, res) => {
@@ -158,9 +198,6 @@ const getUserProfile = async (req, res) => {
       res.json({
         _id: req.user._id,
         name: req.user.name,
-        phone: req.user.phone,
-        faze: req.user.faze,
-        maze: req.user.maze,
         email: req.user.email,
         photo: req.user.photo,
         userType: req.user.userType
@@ -218,15 +255,13 @@ const getUser = async (req, res) => {
   }
 };
 
-const getUserByReferralCodee = async (req, res) => {
+const getUserByReferralCode = async (req, res) => {
   try {
-    const { referralCode } = req.params;
-
-    // Kullanıcıyı ve onun referral zincirini al
-    const users = await User.find({ referralChain: referralCode });  // referralChain'deki tüm kullanıcıları getir
+    const { referralCode } = req.params;  // referralCode URL parametresi olarak alınıyor
+    const users = await User.find({ referredBy: referralCode });  // referralCode ile arama yapılıyor
 
     if (users.length === 0) {
-      return res.status(404).json({ message: "Bu referans kodu ile kayıtlı kullanıcı bulunamadı" });
+      return res.status(404).json({ message: "No users found for this referral code" });
     }
 
     res.json({ users });
@@ -236,13 +271,15 @@ const getUserByReferralCodee = async (req, res) => {
   }
 };
 
-const getUserByReferralCode = async (req, res) => {
+const getUserByReferralCodee = async (req, res) => {
   try {
-    const { referralCode } = req.params;  // referralCode URL parametresi olarak alınıyor
-    const users = await User.find({ referredBy: referralCode });  // referralCode ile arama yapılıyor
+    const { referralCode } = req.params;
+
+    // Kullanıcıyı ve onun referral zincirini al
+    const users = await User.find({ referralChain: referralCode });  // referralChain'deki tüm kullanıcıları getir
 
     if (users.length === 0) {
-      return res.status(404).json({ message: "No users found for this referral code" });
+      return res.status(404).json({ message: "Bu referans kodu ile kayıtlı kullanıcı bulunamadı" });
     }
 
     res.json({ users });
@@ -340,12 +377,13 @@ const processPurchase = async (userId, purchaseAmount) => {
 
 export {
   processPurchase,
-  getUserByReferralCodee,
   getUserByReferralCode,
+  getUserByReferralCodee,
   authUser,
   registerUser,
   logoutUser,
   getUser,
   getUserProfile,
   updateUserProfile,
+  VerfiyEmail,
 };
