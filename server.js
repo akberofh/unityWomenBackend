@@ -13,28 +13,26 @@ import cron from './cornJob/resertStock.js';
 import mongoose from 'mongoose';
 import paymentRoutes from './routes/paymentRoute.js'
 
-
 dotenv.config();
-
 
 cron;
 
 // Database connection (Ensure you connect to your DB before the app starts)
 connectDB();
 
-
 const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://unity-women.vercel.app',
-  credentials: true,
+  origin: 'https://unity-women.vercel.app',  // Allow only your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
+  credentials: true,  // Allow cookies to be sent with requests
+  preflightContinue: false,  // Do not pass control to the next handler for preflight requests
+  optionsSuccessStatus: 204  // Status code for successful OPTIONS requests (preflight)
 }));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-
 
 // Define the Review schema and model before using it in the routes
 const reviewSchema = new mongoose.Schema({
@@ -43,14 +41,11 @@ const reviewSchema = new mongoose.Schema({
   name: String,
   email: String,
   catagory: String,
-  // Corrected spelling: "catagory"
 } ,{ timestamps: true });
 
 const Review = mongoose.model('Review', reviewSchema); // Create the Review model
 
 const PORT = process.env.PORT || 5000;
-
-
 
 app.use('/api/users', userRoutes);
 app.use('/api/payment', paymentRoutes);
@@ -120,9 +115,6 @@ app.get('/api/reviews/:catagory', async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
-
 
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
