@@ -136,6 +136,7 @@ const registerUser = async (req, res) => {
         verificationToken: user.verificationToken,
         referralLink,
         isVerified: user.isVerified,
+        payment: user.payment,
         referralChain: user.referralChain,
       });
     } else {

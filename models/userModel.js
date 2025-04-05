@@ -17,6 +17,7 @@ const userSchema = mongoose.Schema(
     },
     phone: {
       type: String,
+      unique: true,
     },
     faze: {
       type: String,
@@ -26,6 +27,11 @@ const userSchema = mongoose.Schema(
     },
     finCode: {
       type: String,
+      unique: true,
+    },
+    payment: {
+      type: Boolean,
+      default: false, 
     },
     card: {
       type: Number,
