@@ -228,18 +228,14 @@ const getUser = async (req, res) => {
 const getUserByReferralCode = async (req, res) => {
   try {
     const { referralCode } = req.params;
-    const users = await User.find({ referredBy: referralCode });  // doğru değişken ismi: users
 
-    if (users.length === 0) {
-      return res.status(404).json({ message: "No users found for this referral code" });
-    }
-
+    const users = await User.find({ referredBy: referralCode });
     const owner = await User.findOne({ referralCode });
 
     res.json({
-        count: users.length,  // düzelttik!
-        owner: owner ? { name: owner.name, email: owner.email } : null,
-        users
+      count: users.length,
+      owner: owner ? { name: owner.name, email: owner.email } : null,
+      users
     });
 
   } catch (error) {
@@ -247,6 +243,7 @@ const getUserByReferralCode = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const getUserByReferralCodee = async (req, res) => {
   try {
