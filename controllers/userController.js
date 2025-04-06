@@ -44,7 +44,7 @@ const authUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender,card,finCode } = req.body;
+    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender,card,finCode ,referralLinkOwner} = req.body;
 
     if (!gender || !['kişi', 'qadın'].includes(gender.toLowerCase())) {
       return res.status(400).json({ message: "Geçerli bir cinsiyet seçimi yapınız (kişi veya qadın)." });
@@ -106,6 +106,7 @@ const registerUser = async (req, res) => {
       finCode,
       referralCode,
       referralChain,
+      referralLinkOwner,
       referredBy,
       gender: gender.toLowerCase(),
       password,
@@ -138,6 +139,7 @@ const registerUser = async (req, res) => {
         isVerified: user.isVerified,
         payment: user.payment,
         referralChain: user.referralChain,
+        referralLinkOwner: user.referralLinkOwner,
       });
     } else {
       res.status(400).json({ message: "User not added" });
@@ -147,7 +149,42 @@ const registerUser = async (req, res) => {
   }
 };
 
+const getReferralLinkOwner = async (req, res) => {
+  try {
+    const { referralCode } = req.params;
 
+    // Bu referralCode'a sahip kullanıcıyı bul
+    const user = await User.findOne({ referralCode });
+
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    // Eğer referralLinkOwner boşsa, doğrudan kayıt olmuş demektir
+    if (!user.referralLinkOwner) {
+      return res.status(200).json({ message: "Bu kullanıcı doğrudan kayıt olmuş, bir davetçi yok." });
+    }
+
+    // referralLinkOwner referralCode’una sahip kullanıcıyı bul
+    const trueReferrer = await User.findOne({ referralCode: user.referralLinkOwner });
+
+    if (!trueReferrer) {
+      return res.status(404).json({ message: "Asıl davetçi bulunamadı" });
+    }
+
+    // Başarıyla bulunan asıl davetçiyi dön
+    res.json({
+      referrerName: trueReferrer.name,
+      referrerEmail: trueReferrer.email,
+      referrerPhoto: trueReferrer.photo,
+      referrerReferralCode: trueReferrer.referralCode
+    });
+
+  } catch (error) {
+    console.error("Asıl davetçi alınamadı:", error);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+};
 
 
 
@@ -286,4 +323,5 @@ export {
   getUser,
   getUserProfile,
   updateUserProfile,
+  getReferralLinkOwner,
 };

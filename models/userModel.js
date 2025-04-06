@@ -15,6 +15,9 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    referralLinkOwner: 
+    { type: String,
+       },
     phone: {
       type: String,
       unique: true,
