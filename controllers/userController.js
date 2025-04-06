@@ -44,7 +44,7 @@ const authUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender,Card,FinCode } = req.body;
+    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender,card,finCode } = req.body;
 
     if (!gender || !['kişi', 'qadın'].includes(gender.toLowerCase())) {
       return res.status(400).json({ message: "Geçerli bir cinsiyet seçimi yapınız (kişi veya qadın)." });
@@ -102,8 +102,8 @@ const registerUser = async (req, res) => {
       phone,
       faze,
       maze,
-      Card,
-      FinCode,
+      card,
+      finCode,
       referralCode,
       referralChain,
       referredBy,
@@ -126,8 +126,8 @@ const registerUser = async (req, res) => {
         photo: user.photo,
         phone: user.phone,
         faze: user.faze,
-        FinCode: user.FinCode,
-        Card: user.Card,
+        finCode: user.finCode,
+        card: user.card,
         maze: user.maze,
         referralCode: user.referralCode,
         name: user.name,
