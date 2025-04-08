@@ -301,6 +301,43 @@ const getUserByReferralCodee = async (req, res) => {
   }
 };
 
+const getReferredBy = async (req, res) => {
+  try {
+    const { referralCode } = req.params;
+
+    // Bu referralCode'a sahip kullanıcıyı bul
+    const user = await User.findOne({ referralCode });
+
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    // Eğer referralLinkOwner boşsa, doğrudan kayıt olmuş demektir
+    if (!user.referredBy) {
+      return res.status(200).json({ message: "Bu kullanıcı doğrudan kayıt olmuş, bir davetçi yok." });
+    }
+
+    // referralLinkOwner referralCode’una sahip kullanıcıyı bul
+    const trueReferrer = await User.findOne({ referralCode: user.referredBy });
+
+    if (!trueReferrer) {
+      return res.status(404).json({ message: "Asıl davetçi bulunamadı" });
+    }
+
+    // Başarıyla bulunan asıl davetçiyi dön
+    res.json({
+      referrerName: trueReferrer.name,
+      referrerEmail: trueReferrer.email,
+      referrerPhoto: trueReferrer.photo,
+      referrerReferralCode: trueReferrer.referralCode
+    });
+
+  } catch (error) {
+    console.error("Asıl davetçi alınamadı:", error);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+};
+
 
 
 
@@ -321,6 +358,7 @@ export {
   registerUser,
   logoutUser,
   getUser,
+  getReferredBy,
   getUserProfile,
   updateUserProfile,
   getReferralLinkOwner,
