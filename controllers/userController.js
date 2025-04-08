@@ -82,9 +82,24 @@ const registerUser = async (req, res) => {
       photo = req.file.buffer.toString('base64');
     }
 
+    const phoneExists = await User.findOne({ phone });
+    if (phoneExists) {
+      return res.status(400).json({ message: "Bu telefon nömrəsi artıq qeydiyyatdan keçib. Xahiş edirik, fərqli bir telefon nömrəsi istifadə edin." });
+    }
+
+    const referralCodeExists = await User.findOne({ referralCode });
+    if (referralCodeExists) {
+      return res.status(400).json({ message: "Bu referral kodu artıq istifadə olunub. Xahiş edirik, fərqli bir kod istifadə edin." });
+    }
+
+    const finCodeExists = await User.findOne({ finCode });
+    if (finCodeExists) {
+      return res.status(400).json({ message: "Bu finkod artıq qeydiyyatdan keçib. Xahiş edirik, fərqli bir finkod istifadə edin." });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Bu email artıq qeydiyyatdan keçib. Xahiş edirik, fərqli bir email istifadə edin." });
     }
 
     if (userType === 'admin') {
