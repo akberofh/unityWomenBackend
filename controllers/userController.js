@@ -26,13 +26,17 @@ const authUser = async (req, res) => {
         name: user.name,
         photo: user.photo,
         finCode: user.finCode,
-        Card: user.Card,
+        card: user.card,
         email: user.email,
         gender : user.gender,
+        faze : user.faze,
+        phone : user.phone,
         userType : user.userType,
         referralCode: user.referralCode,
+        referredBy: user.referredBy,
         referralLink ,
         referralChain: user.referralChain,
+        referralLinkOwner: user.referralLinkOwner,
       });
     } else {
       res.status(400).json({ message: 'Email ya da parola hatalı' });
