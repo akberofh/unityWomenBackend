@@ -13,11 +13,26 @@ import {
 } from '../controllers/userController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
+import User from '../models/userModel.js';
 
 
 const router = express.Router();
 
+router.delete('/delete/:id', async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    const deletedProduct = await User.findByIdAndDelete(id);
+    
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Məhsul tapılmadı.' });
+    }
+
+    res.status(200).json({ message: 'Məhsul uğurla silindi.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Silinmə zamanı xəta baş verdi.', error });
+  }
+});
 
 router.get("/get-link-owner/:referralCode", getReferralLinkOwner);
 
