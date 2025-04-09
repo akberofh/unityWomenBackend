@@ -18,6 +18,21 @@ import User from '../models/userModel.js';
 
 const router = express.Router();
 
+router.put('/update/:id', async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { name, email },
+      { new: true }
+    );
+    res.json({ success: true, updatedUser });
+  } catch (error) {
+    console.error('Yenilənmə zamanı xəta:', error);
+    res.status(500).json({ success: false, message: 'Server xətası' });
+  }
+});
+
 router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
 
