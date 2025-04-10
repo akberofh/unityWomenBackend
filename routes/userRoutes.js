@@ -20,10 +20,10 @@ const router = express.Router();
 
 router.put('/update/:id', async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, payment } = req.body; // 'payment' bilgisi alınıyor
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email },
+      { name, email, payment }, // 'payment' ekleniyor
       { new: true }
     );
     res.json({ success: true, updatedUser });
