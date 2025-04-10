@@ -14,18 +14,30 @@ import {
 import { userControlAuth } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
+import bcrypt from 'bcryptjs';
 
 
 const router = express.Router();
 
 router.put('/update/:id', async (req, res) => {
   try {
-    const { name, email, payment } = req.body; // 'payment' bilgisi alınıyor
+    const { name, email, payment, password } = req.body; // 'password' bilgisi alınıyor
+
+    let updatedData = { name, email, payment };
+
+    // Eğer password varsa, şifreyi hash'leyip ekliyoruz
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10); // Şifreyi hash'le
+      updatedData.password = hashedPassword; // hash'lenmiş şifreyi ekle
+    }
+
+    // Kullanıcıyı güncelle
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email, payment }, // 'payment' ekleniyor
+      updatedData,
       { new: true }
     );
+
     res.json({ success: true, updatedUser });
   } catch (error) {
     console.error('Yenilənmə zamanı xəta:', error);
