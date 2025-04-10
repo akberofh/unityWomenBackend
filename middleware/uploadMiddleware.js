@@ -31,32 +31,28 @@ const upload = multer({
     limits: { fileSize: 60 * 1024 * 1024 },  
 });
 
-// Cloudinary'ye yükleme fonksiyonu
 const uploadToCloudinary = (req, res, next) => {
     if (!req.file) {
-        return res.status(400).send("No file uploaded.");
+      return next(); // Fotoğraf yüklenmemişse, geçiş yap
     }
-
+  
     const stream = cloudinaryV2.uploader.upload_stream(
-        {
-            resource_type: 'image', 
-            folder: 'user_photos',  
-        },
-        (error, result) => {
-            if (error) {
-                console.error("Cloudinary Error: ", error);
-                return res.status(500).send("Cloudinary upload error: " + error.message);
-            }
-
-            req.fileUrl = result.secure_url;
-            console.log("result",result);
-            
-            next();
+      {
+        resource_type: 'image',
+        folder: 'user_photos',  // Fotoğraflar için klasör adı
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Error: ", error);
+          return res.status(500).send("Cloudinary upload error: " + error.message);
         }
+  
+        req.fileUrl = result.secure_url;  // Cloudinary URL'sini kaydet
+        next();  // İleriye doğru geçiş yap
+      }
     );
-
-    // Buffer'ı stream'e gönderiyoruz
-    stream.end(req.file.buffer); 
-};
+  
+    stream.end(req.file.buffer);  // Buffer'ı stream'e gönderiyoruz
+  };
 
 export { upload, uploadToCloudinary };
