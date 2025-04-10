@@ -81,9 +81,9 @@ const registerUser = async (req, res) => {
     }
     
 
-    let photo = '';
+    let photo = ''; 
     if (req.file) {
-      photo = req.file.buffer.toString('base64');
+      photo = req.fileUrl; 
     }
 
     const phoneExists = await User.findOne({ phone });
@@ -244,7 +244,14 @@ const updateUserProfile = async (req, res) => {
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      user.photo = req.file ? req.file.buffer.toString('base64') : user.photo;
+      if (req.file) {
+        // Cloudinary'den alınan URL'yi kullanıcıya kaydet
+        user.photo = req.fileUrl;  // Cloudinary URL'si
+
+        if (!user.photo) {
+          return res.status(500).json({ message: "Fotoğraf yüklenirken bir hata oluştu." });
+        }
+      }
 
 
       if (req.body.password) {

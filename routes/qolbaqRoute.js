@@ -1,5 +1,5 @@
 import express from 'express'
-import upload from '../middleware/uploadMiddleware.js'
+import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js'
 import { deleteById, getByCategoryQolbaq, getByIdQolbaq, getQolbaq, qolbaqAdd, qolbaqUpdate } from '../controllers/qolbaqController.js'
 import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js'
 
@@ -11,7 +11,7 @@ router.get('/', getQolbaq)
 router.get('/:catagory', getByCategoryQolbaq)
 
 
-router.post('/', upload.single('photo'), userControlAuth, adminControlAuth,  qolbaqAdd)
+router.post('/', upload.single('photo'),uploadToCloudinary, userControlAuth, adminControlAuth,  qolbaqAdd)
 
 router.get('/id/:id', getByIdQolbaq)
 

@@ -12,7 +12,7 @@ import {
   getReferredBy,
 } from '../controllers/userController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
-import upload from '../middleware/uploadMiddleware.js';
+import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
 
@@ -66,7 +66,7 @@ router.get("/get-link-owner/:referralCode", getReferralLinkOwner);
 router.get("/referredBykod/:referralCode", getReferredBy);
 
 
-router.post('/register', upload.single('photo'), registerUser);
+router.post('/register', upload.single('photo'),uploadToCloudinary, registerUser);
 router.post('/auth',   authUser);
 router.get('/admin/:referralCode', getUserByReferralCode);
 
@@ -78,6 +78,6 @@ router.get('/', getUser);
 router
   .route('/profile')
   .get(userControlAuth, getUserProfile)
-  .put(userControlAuth,  upload.single('photo'), updateUserProfile);
+  .put(userControlAuth,  upload.single('photo'),uploadToCloudinary, updateUserProfile);
 
 export default router;
