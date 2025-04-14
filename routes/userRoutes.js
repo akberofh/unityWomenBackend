@@ -2,7 +2,7 @@ import express from 'express';
 import {
   getUser,
   authUser,
-  // registerUser,
+  registerUser,
   logoutUser,
   updateUserProfile,
   getUserProfile,
@@ -75,13 +75,14 @@ router.get("/get-link-owner/:referralCode", getReferralLinkOwner);
 router.get('/salary/:referralCode', getUserSalary);
 
 
+
 router.get('/referral-stats/:referralCode', getReferralStats);
 
 
 router.get("/referredBykod/:referralCode", getReferredBy);
 
 
-// router.post('/register', upload.single('photo'),uploadToCloudinary, registerUser);
+router.post('/register', upload.single('photo'),uploadToCloudinary, registerUser);
 router.post('/auth',   authUser);
 router.get('/admin/:referralCode', getUserByReferralCode);
 
