@@ -491,7 +491,130 @@ export const createSystemSettings = async (req, res) => {
 
 
 
+export const getUserSalary = async (req, res) => {
+  try {
+    const { referralCode } = req.params;
 
+    const user = await User.findOne({ referralCode });
+    if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+
+    // SAĞ ve SOL kolu getir
+    const children = await User.find({ referredBy: referralCode });
+    const right = children[0];
+    const left = children[1];
+
+    // Zincirleri getir
+    const getChain = async (refCode) => {
+      if (!refCode) return [];
+      return await User.find({ referralChain: refCode });
+    };
+
+    const rightChain = await getChain(right?.referralCode);
+    const leftChain = await getChain(left?.referralCode);
+
+    const rightTotal = rightChain.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+    const leftTotal = leftChain.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+
+    const total = rightTotal + leftTotal;
+
+    // Tek kol varsa
+    if (!right || !left) {
+      const oneSideTotal = right ? rightTotal : leftTotal;
+      let salaryRate = 0;
+      if (oneSideTotal >= 10000) salaryRate = 0.006;
+      else if (oneSideTotal >= 4000) salaryRate = 0.009;
+      else if (oneSideTotal >= 2000) salaryRate = 0.012;
+      else if (oneSideTotal >= 1000) salaryRate = 0.015;
+      else if (oneSideTotal >= 500) salaryRate = 0.018;
+      else if (oneSideTotal >= 200) salaryRate = 0.018;
+      else if (oneSideTotal >= 100) salaryRate = 0.03;
+
+      const salary = (oneSideTotal * salaryRate).toFixed(2);
+      return res.json({
+        mode: "Single Side",
+        side: right ? "Right" : "Left",
+        total: oneSideTotal,
+        salary: Number(salary),
+        rank: null,
+        rate: salaryRate * 100
+      });
+    }
+
+    // İki kol varsa
+    if (total < 60) {
+      return res.json({ message: "Toplam günlük kazanç 60 AZN altında. Maaş hesaplanamaz." });
+    }
+
+    // Oranlara göre splitFactor hesapla
+    const big = Math.max(rightTotal, leftTotal);
+    const ratio = big / total;
+    let splitFactor = 1;
+
+    if (ratio >= 0.96) splitFactor = 3;
+    else if (ratio >= 0.90) splitFactor = 2.5;
+    else if (ratio >= 0.80) splitFactor = 2;
+
+    // Rütbe ve yüzdelik hesaplama
+    let salaryRate = 0;
+    let rank = "";
+
+    if (total >= 12000) { salaryRate = 0.105; rank = "Direktor"; }
+    else if (total >= 8000) { salaryRate = 0.10; rank = "Bas Lider"; }
+    else if (total >= 6000) { salaryRate = 0.09; rank = "Iki Qat Lider"; }
+    else if (total >= 4000) { salaryRate = 0.085; rank = "Lider"; }
+    else if (total >= 1000) { salaryRate = 0.078; rank = "Bas Menecer"; }
+    else if (total >= 500) { salaryRate = 0.072; rank = "Menecer"; }
+    else if (total >= 250) { salaryRate = 0.07; rank = "Bas Meselehetci"; }
+    else if (total >= 60) { salaryRate = 0.067; rank = "Meselehetci"; }
+
+    const salary = ((total * salaryRate) / splitFactor).toFixed(2);
+
+    // Şu anki tarih ile sistem başlama tarihi arasındaki periyotları hesapla
+    const systemSettings = await SystemSettings.findOne();
+    const systemStart = new Date(systemSettings.referralSystemStartDate);
+    const now = new Date();
+
+    // 15 günlük periyotları oluştur
+    const periods = generatePeriods(systemStart, now);
+
+    // Her periyot için maaşı hesapla
+    const periodSalaries = periods.map(period => {
+      const usersInPeriod = [...rightChain, ...leftChain].filter(u =>
+        u.createdAt >= period.start && u.createdAt <= period.end
+      );
+
+      const periodTotal = usersInPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+      const periodSalary = ((periodTotal * salaryRate) / splitFactor).toFixed(2);
+
+      return {
+        periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
+        salary: Number(periodSalary),
+        rank,
+        name:user.name,
+        email:user.email,
+        photo:user.photo
+      };
+    });
+
+    // Sonuçları döndür
+    return res.json({
+   
+      mode: "Dual Side",
+      total,
+      rightTotal,
+      leftTotal,
+      salary: Number(salary),
+      rank,
+      rate: salaryRate * 100,
+      splitFactor,
+      periodSalaries  // 15 günlük periyotlar için maaşlar
+    });
+
+  } catch (error) {
+    console.error("Salary hesaplama hatası:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+};
 
 
 

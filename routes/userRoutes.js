@@ -12,6 +12,7 @@ import {
   getReferredBy,
   createSystemSettings,
   getReferralStats,
+  getUserSalary,
 } from '../controllers/userController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
@@ -70,6 +71,9 @@ router.delete('/delete/:id', async (req, res) => {
 });
 
 router.get("/get-link-owner/:referralCode", getReferralLinkOwner);
+
+router.get('/salary/:referralCode', getUserSalary);
+
 
 router.get('/referral-stats/:referralCode', getReferralStats);
 

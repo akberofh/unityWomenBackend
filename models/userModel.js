@@ -38,6 +38,7 @@ const userSchema = mongoose.Schema(
     },
     card: {
       type: Number,
+      default : 0,
     },
     referralLink: {
       type: String,
@@ -79,6 +80,10 @@ const userSchema = mongoose.Schema(
       type: Number,
       default: 0, 
     },
+    dailyEarnings: {
+      type: Number,
+      default: 0,
+    },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     resetPasswordToken: String,
@@ -88,6 +93,18 @@ const userSchema = mongoose.Schema(
   },
   { timestamps: true } 
 );
+
+userSchema.post('findOneAndUpdate', async function (doc) {
+  if (doc && typeof doc.payment !== 'undefined') {
+    const dailyEarnings = doc.payment === true ? 10 : 0;
+
+    // Sadece değişmesi gerekiyorsa güncelle
+    if (doc.dailyEarnings !== dailyEarnings) {
+      doc.dailyEarnings = dailyEarnings;
+      await doc.save();
+    }
+  }
+});
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
