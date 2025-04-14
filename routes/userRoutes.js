@@ -10,6 +10,7 @@ import {
   getUserByReferralCodee,
   getReferralLinkOwner,
   getReferredBy,
+  createSystemSettings,
 } from '../controllers/userController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
@@ -19,16 +20,22 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-router.put('/update/:id', async (req, res) => {
+router.put('/update/:id', upload.single('photo'), uploadToCloudinary, async (req, res) => {
   try {
-    const { name, email, payment, password } = req.body; // 'password' bilgisi alınıyor
+    const { name, email, payment, password } = req.body;
 
+    // Güncellenecek veriler
     let updatedData = { name, email, payment };
 
-    // Eğer password varsa, şifreyi hash'leyip ekliyoruz
+    // Eğer Cloudinary'den gelen URL varsa, bunu ekle
+    if (req.fileUrl) {
+      updatedData.photo = req.fileUrl;
+    }
+
+    // Eğer şifre varsa, hash'leyip ekle
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10); // Şifreyi hash'le
-      updatedData.password = hashedPassword; // hash'lenmiş şifreyi ekle
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedData.password = hashedPassword;
     }
 
     // Kullanıcıyı güncelle
@@ -40,8 +47,8 @@ router.put('/update/:id', async (req, res) => {
 
     res.json({ success: true, updatedUser });
   } catch (error) {
-    console.error('Yenilənmə zamanı xəta:', error);
-    res.status(500).json({ success: false, message: 'Server xətası' });
+    console.error('Güncelleme hatası:', error);
+    res.status(500).json({ success: false, message: 'Sunucu hatası' });
   }
 });
 
@@ -71,6 +78,9 @@ router.post('/auth',   authUser);
 router.get('/admin/:referralCode', getUserByReferralCode);
 
 router.get('/user/:referralCode', getUserByReferralCodee);
+
+router.post("/system-settings", createSystemSettings);
+
 
 
 router.post('/logout', logoutUser);

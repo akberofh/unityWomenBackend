@@ -369,7 +369,125 @@ const getReferredBy = async (req, res) => {
   }
 };
 
+function generatePeriods(startDate, endDate) {
+  const periods = [];
+  let currentStart = new Date(startDate);
+  let currentEnd = new Date(startDate);
+  currentEnd.setDate(currentStart.getDate() + 14);
+  console.log('start', currentStart);
 
+
+  while (currentStart < endDate) {
+    periods.push({
+      start: new Date(currentStart),
+      end: new Date(currentEnd)
+    });
+
+    currentStart.setDate(currentStart.getDate() + 15);
+    currentEnd.setDate(currentStart.getDate() + 14);
+  }
+
+  return periods;
+}
+
+const getReferralStats = async (req, res) => {
+  try {
+    const { referralCode } = req.params;
+
+    // Find the user with the given referral code
+    const user = await User.findOne({ referralCode });
+
+    if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+
+    // Get system settings and start date
+    const systemSettings = await SystemSettings.findOne();
+    const systemStart = new Date(systemSettings.referralSystemStartDate);
+    const now = new Date();
+
+    const invitedUser = await User.find({ referralLinkOwner: referralCode });
+
+
+    // Get all invited users with payment=true
+    const invitedUsers = await User.find({ referralLinkOwner: referralCode, payment: true });
+
+    // Calculate total earned from invited users
+    const totalEarned = invitedUsers.length * 2;
+
+    // Generate 15-day periods starting from system start date to now
+    const periods = generatePeriods(systemStart, now);
+    console.log("Generated Periods:",);
+    periods.forEach(p => {
+      console.log(`${p.start.toISOString()} - ${p.end.toISOString()}`);
+    });
+
+
+    // Calculate earnings for each 15-day period
+    const periodEarnings = periods.map(period => {
+      const usersInPeriod = invitedUsers.filter(u =>
+        u.createdAt >= period.start && u.createdAt <= period.end
+      );
+
+      return {
+        periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
+        userCount: usersInPeriod.length,
+        earned: usersInPeriod.length * 2
+      };
+    });
+
+    // Return the stats
+    res.json({
+      referrerName: user.name,
+      referrerEmail: user.email,
+      count: invitedUser.length,
+      totalInvited: invitedUsers.length,
+      totalEarned,
+      periodEarnings,
+      invitedUsers: invitedUsers.map(u => ({
+        name: u.name,
+        email: u.email,
+        payment: u.payment,
+        createdAt: u.createdAt,
+        photo: u.photo,
+        referralCode: u.referralCode
+      }))
+    });
+
+  } catch (err) {
+    console.error("Hata:", err);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+};
+
+
+
+
+
+import SystemSettings from "../models/systemSettingsModel.js";
+
+// Create system settings with referral system start date
+export const createSystemSettings = async (req, res) => {
+  try {
+    const { referralSystemStartDate } = req.body;
+
+    // Check if the referralSystemStartDate is provided
+    if (!referralSystemStartDate) {
+      return res.status(400).json({ message: "Başlangıç tarihi girilmelidir." });
+    }
+
+    // Create new system settings entry
+    const newSettings = new SystemSettings({
+      referralSystemStartDate: new Date(referralSystemStartDate)
+    });
+
+    // Save to the database
+    await newSettings.save();
+
+    res.status(201).json({ message: "Sistem ayarları başarıyla oluşturuldu." });
+  } catch (err) {
+    console.error("Hata:", err);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+};
 
 
 
