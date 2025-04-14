@@ -504,6 +504,7 @@ export {
   getUserByReferralCode,
   getUserByReferralCodee,
   authUser,
+  getReferralStats,
   registerUser,
   logoutUser,
   getUser,
