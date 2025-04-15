@@ -558,14 +558,47 @@ export const getUserSalary = async (req, res) => {
     let salaryRate = 0;
     let rank = "";
 
-    if (total >= 12000) { salaryRate = 0.105; rank = "Direktor"; }
-    else if (total >= 8000) { salaryRate = 0.10; rank = "Bas Lider"; }
-    else if (total >= 6000) { salaryRate = 0.09; rank = "Iki Qat Lider"; }
-    else if (total >= 4000) { salaryRate = 0.085; rank = "Lider"; }
-    else if (total >= 1000) { salaryRate = 0.078; rank = "Bas Menecer"; }
-    else if (total >= 500) { salaryRate = 0.072; rank = "Menecer"; }
-    else if (total >= 250) { salaryRate = 0.07; rank = "Bas Meselehetci"; }
-    else if (total >= 60) { salaryRate = 0.067; rank = "Meselehetci"; }
+    if (total >= 12000) { salaryRate = 0.105; }
+    else if (total >= 8000) { salaryRate = 0.10;}
+    else if (total >= 6000) { salaryRate = 0.09;}
+    else if (total >= 4000) { salaryRate = 0.085;  }
+    else if (total >= 1000) { salaryRate = 0.078;  }
+    else if (total >= 500) { salaryRate = 0.073;  }
+    else if (total >= 250) { salaryRate = 0.071; }
+    else if (total >= 60) { salaryRate = 0.068; }
+
+    if (total >= 10000 && total <= 12000) {
+      salaryRate = 0.105;
+      rank = "Bas Direktor";
+    } else if (total >= 6001 && total <= 9999.99) {
+      salaryRate = 0.10;
+      rank = "Direktor";
+    } else if (total >= 4000 && total <= 6000.99) {
+      salaryRate = 0.09;
+      rank = "Bas Lider";
+    } else if (total >= 2001 && total <= 3999.99) {
+      salaryRate = 0.085;
+      rank = "Iki Qat Lider";
+    } else if (total >= 1001 && total <= 2000.99) {
+      salaryRate = 0.078;
+      rank = "Lider";
+    } else if (total >= 501 && total <= 1000.99) {
+      salaryRate = 0.073;
+      rank = "Bas Menecer";
+    } else if (total >= 251 && total <= 500.99) {
+      salaryRate = 0.071;
+      rank = "Menecer";
+    } else if (total >= 121 && total <= 250.99) {
+      salaryRate = 0.069;
+      rank = "Bas Meslehetci";
+    } else if (total >= 60 && total <= 120.99) {
+      salaryRate = 0.068;
+      rank = "Meslehetci";
+    } else {
+      salaryRate = 0;
+      rank = "Yeni üzv";
+    }
+    
 
     const salary = ((total * salaryRate) / splitFactor).toFixed(2);
 
