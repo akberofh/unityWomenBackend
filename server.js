@@ -27,7 +27,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://lightslategrey-chough-242906.hostingersite.com/',
+  origin: 'https://unity-women.vercel.app',
   credentials: true,
 }));
 
