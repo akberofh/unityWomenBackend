@@ -471,7 +471,7 @@ const getReferralStats = async (req, res) => {
 
 import SystemSettings from "../models/systemSettingsModel.js";
 
-// Create system settings with referral system start date
+
 export const createSystemSettings = async (req, res) => {
   try {
     const { referralSystemStartDate } = req.body;
@@ -508,7 +508,7 @@ export const getUserSalary = async (req, res) => {
     if (!user.payment) {
       return res.status(403).json({ message: "Ödəniş edilməyib. Maaş hesablana bilməz." });
     }
-    
+
 
     const children = await User.find({ referredBy: referralCode });
     const right = children[0];
@@ -534,9 +534,17 @@ export const getUserSalary = async (req, res) => {
 
     const total = rightTotal + leftTotal + selfEarnings;
 
+    const hasRight = right && rightTotal > 0;
+    const hasLeft = left && leftTotal > 0;
+
     // Eğer sadece tek kol varsa:
-    if (!right || !left) {
+    if (!hasRight || !hasLeft) {
       const oneSideTotal = (right ? rightTotal : leftTotal) + selfEarnings;
+
+      if (oneSideTotal < 100) {
+        return res.json({ message: "Toplam günlük kazanç 100 AZN altında. Maaş hesaplanamaz." });
+      }
+
       let rank = "";
 
       let salaryRate = 0;
@@ -548,6 +556,8 @@ export const getUserSalary = async (req, res) => {
       else if (oneSideTotal >= 500) salaryRate = 0.018;
       else if (oneSideTotal >= 200) salaryRate = 0.018;
       else if (oneSideTotal >= 100) salaryRate = 0.03;
+
+
 
       if (oneSideTotal >= 10000 && oneSideTotal <= 12000) {
         rank = "Bas Direktor";
@@ -575,61 +585,61 @@ export const getUserSalary = async (req, res) => {
       const salary = (oneSideTotal * salaryRate).toFixed(2);
 
 
-      
-    const systemSettings = await SystemSettings.findOne();
-    const systemStart = new Date(systemSettings.referralSystemStartDate);
-    const now = new Date();
 
-    const periods = generatePeriods(systemStart, now);
+      const systemSettings = await SystemSettings.findOne();
+      const systemStart = new Date(systemSettings.referralSystemStartDate);
+      const now = new Date();
+
+      const periods = generatePeriods(systemStart, now);
 
 
-    const periodSalaries = periods.map(period => {
-      const usersInPeriod = [];
+      const periodSalaries = periods.map(period => {
+        const usersInPeriod = [];
 
-      // Sağ ve sol kullanıcılarını kontrol et ve yalnızca mevcut olanları ekle
-      if (right) {
-        usersInPeriod.push(right);  // Sağ kullanıcısı varsa ekle
-      }
-      
-      if (left) {
-        usersInPeriod.push(left);   // Sol kullanıcısı varsa ekle
-      }
-      
-      // Zincirleri (rightChain ve leftChain) ekle
-      if (rightChain && rightChain.length > 0) {
-        usersInPeriod.push(...rightChain);  // Sağ zincirde veriler varsa ekle
-      }
-      
-      if (leftChain && leftChain.length > 0) {
-        usersInPeriod.push(...leftChain);  // Sol zincirde veriler varsa ekle
-      }
-      
-      // Ana kullanıcıyı ekle
-      usersInPeriod.push(user);
-      
-      // Sonuç olarak kullanıcılar ekleniyor
-      
+        // Sağ ve sol kullanıcılarını kontrol et ve yalnızca mevcut olanları ekle
+        if (right) {
+          usersInPeriod.push(right);  // Sağ kullanıcısı varsa ekle
+        }
 
-      const usersInThisPeriod = usersInPeriod.filter(u =>
-        u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
-      );
+        if (left) {
+          usersInPeriod.push(left);   // Sol kullanıcısı varsa ekle
+        }
 
-      const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
-      const periodSalary = (periodTotal * salaryRate).toFixed(2);
+        // Zincirleri (rightChain ve leftChain) ekle
+        if (rightChain && rightChain.length > 0) {
+          usersInPeriod.push(...rightChain);  // Sağ zincirde veriler varsa ekle
+        }
 
-      return {
-        periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
-        salary: Number(periodSalary),
-        rank,
-        total: Number(periodTotal),
-        rate: salaryRate * 100,
-        name: user.name,
-        email: user.email,
-        photo: user.photo
-      };
+        if (leftChain && leftChain.length > 0) {
+          usersInPeriod.push(...leftChain);  // Sol zincirde veriler varsa ekle
+        }
 
-    });
- 
+        // Ana kullanıcıyı ekle
+        usersInPeriod.push(user);
+
+        // Sonuç olarak kullanıcılar ekleniyor
+
+
+        const usersInThisPeriod = usersInPeriod.filter(u =>
+          u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
+        );
+
+        const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+        const periodSalary = (periodTotal * salaryRate).toFixed(2);
+
+        return {
+          periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
+          salary: Number(periodSalary),
+          rank,
+          total: Number(periodTotal),
+          rate: salaryRate * 100,
+          name: user.name,
+          email: user.email,
+          photo: user.photo
+        };
+
+      });
+
 
       return res.json({
         mode: "Single Side",
