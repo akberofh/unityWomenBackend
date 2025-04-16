@@ -619,7 +619,7 @@ export const getUserSalary = async (req, res) => {
       const periodSalary = (periodTotal * salaryRate).toFixed(2);
 
       return {
-        periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
+        periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
         salary: Number(periodSalary),
         rank,
         total: Number(periodTotal),
@@ -713,7 +713,7 @@ export const getUserSalary = async (req, res) => {
       const periodSalary = ((periodTotal * salaryRate) / splitFactor).toFixed(2);
 
       return {
-        periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
+        periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
         salary: Number(periodSalary),
         rank,
 
