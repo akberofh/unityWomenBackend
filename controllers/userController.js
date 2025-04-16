@@ -404,7 +404,7 @@ const getReferralStats = async (req, res) => {
     if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
 
     if (!user.payment) {
-      return res.status(403).json({ message: "Ödəniş edilməyib. Mükafat hesablana bilməz." });
+      return res.status(404).json({ message: "Ödəniş edilməyib. Mükafat hesablana bilməz." });
     }
 
     // Get system settings and start date
@@ -432,7 +432,7 @@ const getReferralStats = async (req, res) => {
     // Calculate earnings for each 15-day period
     const periodEarnings = periods.map(period => {
       const usersInPeriod = invitedUsers.filter(u =>
-        u.createdAt >= period.start && u.createdAt <= period.end
+        u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
       );
 
       return {
@@ -454,7 +454,6 @@ const getReferralStats = async (req, res) => {
         name: u.name,
         email: u.email,
         payment: u.payment,
-        createdAt: u.createdAt,
         photo: u.photo,
         referralCode: u.referralCode
       }))
@@ -612,7 +611,7 @@ export const getUserSalary = async (req, res) => {
       
 
       const usersInThisPeriod = usersInPeriod.filter(u =>
-        u.createdAt >= period.start && u.createdAt <= period.end
+        u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
       );
 
       const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
@@ -706,7 +705,7 @@ export const getUserSalary = async (req, res) => {
       usersInPeriod.push(user);
 
       const usersInThisPeriod = usersInPeriod.filter(u =>
-        u.createdAt >= period.start && u.createdAt <= period.end
+        u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
       );
 
       const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
