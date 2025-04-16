@@ -716,6 +716,7 @@ export const getUserSalary = async (req, res) => {
         periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
         salary: Number(periodSalary),
         rank,
+
         total: Number(periodTotal),
         name: user.name,
         email: user.email,
