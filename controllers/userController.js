@@ -538,8 +538,10 @@ export const getUserSalary = async (req, res) => {
     // Eğer sadece tek kol varsa:
     if (!right || !left) {
       const oneSideTotal = (right ? rightTotal : leftTotal) + selfEarnings;
+      let rank = "";
 
       let salaryRate = 0;
+
       if (oneSideTotal >= 10000) salaryRate = 0.006;
       else if (oneSideTotal >= 4000) salaryRate = 0.009;
       else if (oneSideTotal >= 2000) salaryRate = 0.012;
@@ -548,14 +550,96 @@ export const getUserSalary = async (req, res) => {
       else if (oneSideTotal >= 200) salaryRate = 0.018;
       else if (oneSideTotal >= 100) salaryRate = 0.03;
 
+      if (oneSideTotal >= 10000 && oneSideTotal <= 12000) {
+        rank = "Bas Direktor";
+      } else if (oneSideTotal >= 6001 && oneSideTotal <= 9999.99) {
+        rank = "Direktor";
+      } else if (oneSideTotal >= 4000 && oneSideTotal <= 6000.99) {
+        rank = "Bas Lider";
+      } else if (oneSideTotal >= 2001 && oneSideTotal <= 3999.99) {
+        rank = "Iki Qat Lider";
+      } else if (oneSideTotal >= 1001 && oneSideTotal <= 2000.99) {
+        rank = "Lider";
+      } else if (oneSideTotal >= 501 && oneSideTotal <= 1000.99) {
+        rank = "Bas Menecer";
+      } else if (oneSideTotal >= 251 && oneSideTotal <= 500.99) {
+        rank = "Menecer";
+      } else if (oneSideTotal >= 121 && oneSideTotal <= 250.99) {
+        rank = "Bas Meslehetci";
+      } else if (oneSideTotal >= 60 && oneSideTotal <= 120.99) {
+        rank = "Meslehetci";
+      } else {
+        salaryRate = 0;
+        rank = "Yeni üzv";
+      }
+
       const salary = (oneSideTotal * salaryRate).toFixed(2);
+
+
+      
+    const systemSettings = await SystemSettings.findOne();
+    const systemStart = new Date(systemSettings.referralSystemStartDate);
+    const now = new Date();
+
+    const periods = generatePeriods(systemStart, now);
+
+
+    const periodSalaries = periods.map(period => {
+      const usersInPeriod = [];
+
+      // Sağ ve sol kullanıcılarını kontrol et ve yalnızca mevcut olanları ekle
+      if (right) {
+        usersInPeriod.push(right);  // Sağ kullanıcısı varsa ekle
+      }
+      
+      if (left) {
+        usersInPeriod.push(left);   // Sol kullanıcısı varsa ekle
+      }
+      
+      // Zincirleri (rightChain ve leftChain) ekle
+      if (rightChain && rightChain.length > 0) {
+        usersInPeriod.push(...rightChain);  // Sağ zincirde veriler varsa ekle
+      }
+      
+      if (leftChain && leftChain.length > 0) {
+        usersInPeriod.push(...leftChain);  // Sol zincirde veriler varsa ekle
+      }
+      
+      // Ana kullanıcıyı ekle
+      usersInPeriod.push(user);
+      
+      // Sonuç olarak kullanıcılar ekleniyor
+      
+
+      const usersInThisPeriod = usersInPeriod.filter(u =>
+        u.createdAt >= period.start && u.createdAt <= period.end
+      );
+
+      const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+      const periodSalary = (periodTotal * salaryRate).toFixed(2);
+
+      return {
+        periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
+        salary: Number(periodSalary),
+        rank,
+        total: Number(periodTotal),
+        rate: salaryRate * 100,
+        name: user.name,
+        email: user.email,
+        photo: user.photo
+      };
+
+    });
+ 
+
       return res.json({
         mode: "Single Side",
         side: right ? "Right" : "Left",
         total: oneSideTotal,
         salary: Number(salary),
-        rank: null,
-        rate: salaryRate * 100
+        rank,
+        rate: salaryRate * 100,
+        periodSalaries,
       });
     }
 
@@ -632,6 +716,7 @@ export const getUserSalary = async (req, res) => {
         periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
         salary: Number(periodSalary),
         rank,
+        total: Number(periodTotal),
         name: user.name,
         email: user.email,
         photo: user.photo
