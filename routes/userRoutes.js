@@ -13,6 +13,7 @@ import {
   createSystemSettings,
   getReferralStats,
   getUserSalary,
+  getAllSalariesss,
 } from '../controllers/userController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
@@ -24,10 +25,10 @@ const router = express.Router();
 
 router.put('/update/:id', upload.single('photo'), uploadToCloudinary, async (req, res) => {
   try {
-    const { name, email, payment, password } = req.body;
+    const { name, email, payment, password,referralLinkOwner } = req.body;
 
     // Güncellenecek veriler
-    let updatedData = { name, email, payment };
+    let updatedData = { name, email, payment,referralLinkOwner };
 
     // Eğer Cloudinary'den gelen URL varsa, bunu ekle
     if (req.fileUrl) {
@@ -73,6 +74,9 @@ router.delete('/delete/:id', async (req, res) => {
 router.get("/get-link-owner/:referralCode", getReferralLinkOwner);
 
 router.get('/salary/:referralCode', getUserSalary);
+
+
+router.get('/oral/allUsers', getAllSalariesss);
 
 
 
