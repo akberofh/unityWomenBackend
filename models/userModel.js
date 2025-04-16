@@ -98,9 +98,16 @@ userSchema.post('findOneAndUpdate', async function (doc) {
   if (doc && typeof doc.payment !== 'undefined') {
     const dailyEarnings = doc.payment === true ? 10 : 0;
 
-    // Sadece değişmesi gerekiyorsa güncelle
     if (doc.dailyEarnings !== dailyEarnings) {
       doc.dailyEarnings = dailyEarnings;
+
+      // Eğer payment true olduysa ve günlük kazanç 10’a çıkarıldıysa tarihi de yaz
+      if (dailyEarnings === 10) {
+        doc.dailyEarningsDate = new Date(); // şu anki tarih ve saat
+      } else {
+        doc.dailyEarningsDate = null; // false olduğunda temizle istersen
+      }
+
       await doc.save();
     }
   }
