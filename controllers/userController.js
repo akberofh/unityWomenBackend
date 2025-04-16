@@ -657,6 +657,7 @@ export const getUserSalary = async (req, res) => {
 };
 
 
+// routes/user.js veya controller içine ekle
 export const getAllSalariesss = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
