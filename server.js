@@ -12,6 +12,8 @@ import ConfirmedCart from "./routes/confimerdCartRoute.js"
 import cron from './cornJob/resertStock.js';
 import mongoose from 'mongoose';
 import paymentRoutes from './routes/paymentRoute.js'
+import HesablamaRouter from './routes/hesablamaRouter.js'
+import QazancRouter from './routes/qazancRouter.js'
 
 
 dotenv.config();
@@ -59,6 +61,8 @@ app.use('/api/catagory', catagoryRoutes);
 app.use('/api', ConfirmedCart);
 app.use('/api/qolbaq', qolbaqRoutes);
 app.use('/api/product', productRoutes);
+app.use('/api', HesablamaRouter);
+app.use('/api', QazancRouter);
 
 app.get("/", (req, res) => {
   res.json({
