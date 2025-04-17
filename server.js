@@ -12,7 +12,7 @@ import ConfirmedCart from "./routes/confimerdCartRoute.js"
 import cron from './cornJob/resertStock.js';
 import mongoose from 'mongoose';
 import paymentRoutes from './routes/paymentRoute.js'
-import HesablamaRouter from './routes/hesablamaRouter.js'
+import HesablamaRouter from './routes/hesabatRouter.js'
 import QazancRouter from './routes/qazancRouter.js'
 
 
