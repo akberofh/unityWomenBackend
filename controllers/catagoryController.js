@@ -46,7 +46,7 @@ const catagoryUpdate = async (req, res) => {
 
         // Eğer bir fotoğraf dosyası mevcutsa, base64 formatında güncelle
         if (req.file) {
-            catagory.photo = req.file.buffer.toString('base64');
+            catagory.photo =  req.fileUrl;
         }
 
         // Güncellenmiş dest kaydını kaydet
