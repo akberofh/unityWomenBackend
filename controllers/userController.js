@@ -752,6 +752,8 @@ export const getUserSalary = async (req, res) => {
 };
 
 
+
+
 const generatePeriodss = () => {
   const startDate = new Date("2025-04-01T00:00:00.000Z");
   const endDate = new Date("2025-04-14T23:59:59.999Z"); // Günün sonu
@@ -941,7 +943,6 @@ export const getAllSalariesss = async (req, res) => {
     res.status(500).json({ error: "Sunucu hatası" });
   }
 };
-
 
 
 

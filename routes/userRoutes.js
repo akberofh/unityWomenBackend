@@ -15,7 +15,7 @@ import {
   getUserSalary,
   getAllSalariesss,
 } from '../controllers/userController.js';
-import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
+import { userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
@@ -55,7 +55,7 @@ router.put('/update/:id', upload.single('photo'), uploadToCloudinary, async (req
   }
 });
 
-router.delete('/delete/:id',userControlAuth, adminControlAuth, async (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
