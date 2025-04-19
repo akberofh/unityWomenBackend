@@ -24,24 +24,23 @@ const userControlAuth = async (req, res, next) => {
 
 const adminControlAuth = (req, res, next) => {
   if (req.user && req.user.userType === 'admin') {
-    next(); // Eğer kullanıcı admin ise bir sonraki middleware'e geç
+    next(); 
   } else {
-    res.status(403).json({ message: 'Forbidden - Admin access required' }); // Admin değilse 403 hatası döndür
+    res.status(403).json({ message: 'Forbidden - Admin access required' }); 
   }
 };
 
 const adminstratorControlAuth = (req, res, next) => {
   if (req.user && req.user.userType === 'adminstratir') {
-    next(); // Eğer kullanıcı admin ise bir sonraki middleware'e geç
+    next(); 
   } else {
-    res.status(403).json({ message: 'Forbidden - Admin access required' }); // Admin değilse 403 hatası döndür
+    res.status(403).json({ message: 'Forbidden - Admin access required' }); 
   }
 };
 
-// middleware/roleMiddleware.js
 
 export const adminOrAdminstratorAuth = (req, res, next) => {
-  const user = req.user; // Tokenlə gələn user
+  const user = req.user; 
 
   if (!user) {
     return res.status(401).json({ message: 'Token yoxdur və ya etibarsızdır' });
@@ -57,4 +56,4 @@ export const adminOrAdminstratorAuth = (req, res, next) => {
 
 
 
-export { userControlAuth, adminControlAuth ,adminstratorControlAuth ,adminOrAdminstratorAuth};
+export { userControlAuth, adminControlAuth ,adminstratorControlAuth };
