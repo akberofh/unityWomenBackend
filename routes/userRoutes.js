@@ -15,7 +15,7 @@ import {
   getUserSalary,
   getAllSalariesss,
 } from '../controllers/userController.js';
-import { userControlAuth } from '../middleware/authMiddleware.js';
+import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
@@ -23,7 +23,7 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-router.put('/update/:id', upload.single('photo'), uploadToCloudinary, async (req, res) => {
+router.put('/update/:id', upload.single('photo'), uploadToCloudinary,userControlAuth, adminControlAuth, async (req, res) => {
   try {
     const { name, email, payment, password,referralLinkOwner } = req.body;
 

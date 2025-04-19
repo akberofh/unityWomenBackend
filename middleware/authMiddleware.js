@@ -30,6 +30,31 @@ const adminControlAuth = (req, res, next) => {
   }
 };
 
+const adminstratorControlAuth = (req, res, next) => {
+  if (req.user && req.user.userType === 'adminstratir') {
+    next(); // Eğer kullanıcı admin ise bir sonraki middleware'e geç
+  } else {
+    res.status(403).json({ message: 'Forbidden - Admin access required' }); // Admin değilse 403 hatası döndür
+  }
+};
+
+// middleware/roleMiddleware.js
+
+export const adminOrAdminstratorAuth = (req, res, next) => {
+  const user = req.user; // Tokenlə gələn user
+
+  if (!user) {
+    return res.status(401).json({ message: 'Token yoxdur və ya etibarsızdır' });
+  }
+
+  if (user.userType === 'admin' || user.userType === 'adminstrator') {
+    next();
+  } else {
+    return res.status(403).json({ message: 'Bu əməliyyatı yalnız admin və ya administrator edə bilər' });
+  }
+};
 
 
-export { userControlAuth, adminControlAuth };
+
+
+export { userControlAuth, adminControlAuth ,adminstratorControlAuth ,adminOrAdminstratorAuth};

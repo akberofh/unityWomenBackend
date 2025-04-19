@@ -30,6 +30,7 @@ const qolbaqAdd = async (req, res) => {
 };
 
 
+
 const qolbaqUpdate = async (req, res) => {
   const { id } = req.params; // Parametrelerden ID'yi al
   try {
