@@ -23,7 +23,7 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-router.put('/update/:id', userControlAuth, adminControlAuth, upload.single('photo'), uploadToCloudinary, async (req, res) => {
+router.put('/update/:id', upload.single('photo'), uploadToCloudinary, async (req, res) => {
   try {
     const { name, email, payment, password,referralLinkOwner } = req.body;
 
