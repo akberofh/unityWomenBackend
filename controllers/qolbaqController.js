@@ -2,11 +2,9 @@ import QolbaqModel from "../models/qolbaqModel.js";
 
 const qolbaqAdd = async (req, res) => {
   const { title, description, thumbnail, price, distance, catagory,stock } = req.body;
-  let photo = '';
-
-  // Eğer bir fotoğraf dosyası mevcutsa base64 olarak dönüştür
+  let photo = ''; // Cloudinary'den alınacak fotoğraf URL'si
   if (req.file) {
-    photo = req.file.buffer.toString('base64');
+    photo = req.fileUrl; // Cloudinary'den alınan URL
   }
 
   try {
@@ -54,7 +52,7 @@ const qolbaqUpdate = async (req, res) => {
 
     // Eğer bir fotoğraf dosyası mevcutsa, base64 formatında güncelle
     if (req.file) {
-      qolbaq.photo = req.file.buffer.toString('base64');
+      qolbaq.photo = req.fileUrl;  // Cloudinary URL'si
     }
 
     // Güncellenmiş dest kaydını kaydet

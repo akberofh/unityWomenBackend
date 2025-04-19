@@ -3,10 +3,9 @@ import CatagoryModel from "../models/catagoryModel.js";
 
 const catagoryAd = async (req, res) => {
     const { title } = req.body;
-    let photo = '';
-
+    let photo = ''; // Cloudinary'den alınacak fotoğraf URL'si
     if (req.file) {
-        photo = req.file.buffer.toString('base64');
+      photo = req.fileUrl; // Cloudinary'den alınan URL
     }
 
     try {
