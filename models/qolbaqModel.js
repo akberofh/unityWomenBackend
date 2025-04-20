@@ -13,9 +13,9 @@ const qolbaqModel = mongoose.Schema({
 
   },
   photo: {
-    type:[string], // base64 encoded ucun string qebul edir
-
-  },
+    type: [String], 
+  }
+,  
   stock: {
     type: Number,
     required: true,

@@ -31,28 +31,38 @@ const upload = multer({
     limits: { fileSize: 60 * 1024 * 1024 },  
 });
 
-const uploadToCloudinary = (req, res, next) => {
-    if (!req.file) {
-      return next(); // Fotoğraf yüklenmemişse, geçiş yap
-    }
-  
-    const stream = cloudinaryV2.uploader.upload_stream(
-      {
-        resource_type: 'image',
-        folder: 'user_photos',  // Fotoğraflar için klasör adı
-      },
-      (error, result) => {
-        if (error) {
-          console.error("Cloudinary Error: ", error);
-          return res.status(500).send("Cloudinary upload error: " + error.message);
-        }
-  
-        req.fileUrl = result.secure_url;  // Cloudinary URL'sini kaydet
-        next();  // İleriye doğru geçiş yap
-      }
-    );
-  
-    stream.end(req.file.buffer);  // Buffer'ı stream'e gönderiyoruz
-  };
+const uploadToCloudinary = async (req, res, next) => {
+  if (!req.files || req.files.length === 0) {
+    return next();
+  }
+
+  try {
+    const uploadPromises = req.files.map(file => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinaryV2.uploader.upload_stream(
+          {
+            resource_type: 'image',
+            folder: 'user_photos',
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result.secure_url);
+          }
+        );
+
+        stream.end(file.buffer);
+      });
+    });
+
+    const uploadedUrls = await Promise.all(uploadPromises);
+    req.fileUrls = uploadedUrls;
+    next();
+
+  } catch (error) {
+    console.error('Cloudinary Upload Error:', error);
+    res.status(500).send("Cloudinary upload error: " + error.message);
+  }
+};
+
 
 export { upload, uploadToCloudinary };
