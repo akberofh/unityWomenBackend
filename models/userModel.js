@@ -99,12 +99,21 @@ const userSchema = mongoose.Schema(
 
 userSchema.post('findOneAndUpdate', async function (doc) {
   if (doc && typeof doc.payment !== 'undefined') {
-    const dailyEarnings = doc.payment === true ? 10 : 0;
+    // Eğer zaten payment true ve değerler ayarlanmışsa hiç dokunma
+    if (
+      doc.payment === true &&
+      doc.dailyEarnings === 10 &&
+      doc.dailyEarningsDate
+    ) {
+      return; // Hiçbir değişiklik yapma
+    }
 
+    // Yeni ayarlama yap
+    const dailyEarnings = doc.payment === true ? 10 : 0;
     doc.dailyEarnings = dailyEarnings;
 
-    if (dailyEarnings === 10 && doc.dailyEarningsDate) {
-      doc.dailyEarningsDate = new Date();
+    if (dailyEarnings === 10) {
+      doc.dailyEarningsDate = new Date();
     } else {
       doc.dailyEarningsDate = null;
     }
@@ -112,6 +121,7 @@ userSchema.post('findOneAndUpdate', async function (doc) {
     await doc.save();
   }
 });
+
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
