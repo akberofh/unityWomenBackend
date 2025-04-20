@@ -47,6 +47,7 @@ const qolbaqUpdate = async (req, res) => {
     // Gelen verileri güncelle
     qolbaq.title = req.body.title !== undefined ? req.body.title : qolbaq.title;
     qolbaq.price = req.body.price !== undefined ? req.body.price : qolbaq.price;
+    qolbaq.distance = req.body.distance !== undefined ? req.body.distance : qolbaq.distance;
     qolbaq.stock = req.body.stock !== undefined ? req.body.stock : qolbaq.stock;
     qolbaq.catagory = req.body.catagory !== undefined ? req.body.catagory : qolbaq.catagory;
     qolbaq.description = req.body.description !== undefined ? req.body.description : qolbaq.description;
@@ -66,6 +67,7 @@ const qolbaqUpdate = async (req, res) => {
     res.json({
       _id: updateQolbaq._id,
       title: updateQolbaq.title,
+      distance: updateQolbaq.distance,
       catagory: updateQolbaq.catagory,
       stock: updateQolbaq.stock,
       description: updateQolbaq.description,
