@@ -13,7 +13,7 @@ const qolbaqModel = mongoose.Schema({
 
   },
   photo: {
-    type: String, // base64 encoded ucun string qebul edir
+    type:[string], // base64 encoded ucun string qebul edir
 
   },
   stock: {
