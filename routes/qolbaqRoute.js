@@ -10,7 +10,7 @@ router.get('/', getQolbaq)
 router.get('/:catagory', getByCategoryQolbaq)
 
 
-router.post('/', upload.single('photo'),uploadToCloudinary,    qolbaqAdd)
+router.post('/', upload.array('photo'),uploadToCloudinary,    qolbaqAdd)
 
 router.get('/id/:id', getByIdQolbaq)
 

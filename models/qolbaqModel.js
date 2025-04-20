@@ -12,8 +12,8 @@ const qolbaqModel = mongoose.Schema({
     type: String,
 
   },
-  photo: {
-    type: [String], 
+ photo: {
+    type: [String], // Array of photo paths
   }
 ,  
   stock: {

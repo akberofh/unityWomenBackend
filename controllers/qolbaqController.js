@@ -2,9 +2,9 @@ import QolbaqModel from "../models/qolbaqModel.js";
 
 const qolbaqAdd = async (req, res) => {
   const { title, description, thumbnail, price, distance, catagory,stock } = req.body;
-  let photo = ''; // Cloudinary'den alınacak fotoğraf URL'si
-  if (req.file) {
-    photo = req.fileUrl; // Cloudinary'den alınan URL
+  let photo = [];
+  if (req.fileUrls && req.fileUrls.length > 0) {
+    photo = req.fileUrls;
   }
 
   try {
