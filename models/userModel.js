@@ -103,9 +103,8 @@ userSchema.post('findOneAndUpdate', async function (doc) {
 
     doc.dailyEarnings = dailyEarnings;
 
-    if (dailyEarnings === 10 && !doc.dailyEarningsDate) {
+    if (dailyEarnings === 10 && doc.dailyEarningsDate) {
       doc.dailyEarningsDate = new Date();
-    
     } else {
       doc.dailyEarningsDate = null;
     }
