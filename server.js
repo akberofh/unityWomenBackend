@@ -29,7 +29,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: ['https://unity-women.vercel.app','https://unitywomenadmin-8d46b738f39c.herokuapp.com'],
+  origin: ['https://unity-women.vercel.app','https://unity-women-admin.vercel.app'],
   credentials: true,
 }));
 
