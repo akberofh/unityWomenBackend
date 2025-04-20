@@ -30,30 +30,12 @@ const adminControlAuth = (req, res, next) => {
   }
 };
 
-const adminstratorControlAuth = (req, res, next) => {
-  if (req.user && req.user.userType === 'adminstratir') {
-    next(); 
-  } else {
-    res.status(403).json({ message: 'Forbidden - Admin access required' }); 
-  }
-};
-
-
-export const adminOrAdminstratorAuth = (req, res, next) => {
-  const user = req.user; 
-
-  if (!user) {
-    return res.status(401).json({ message: 'Token yoxdur və ya etibarsızdır' });
-  }
-
-  if (user.userType === 'admin' || user.userType === 'adminstrator') {
-    next();
-  } else {
-    return res.status(403).json({ message: 'Bu əməliyyatı yalnız admin və ya administrator edə bilər' });
-  }
-};
 
 
 
 
-export { userControlAuth, adminControlAuth ,adminstratorControlAuth };
+
+
+
+
+export { userControlAuth, adminControlAuth  };

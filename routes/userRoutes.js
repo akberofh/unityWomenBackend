@@ -79,8 +79,6 @@ router.get('/salary/:referralCode', getUserSalary);
 router.get('/oral/allUsers', getAllSalariesss);
 
 
-
-
 router.get('/referral-stats/:referralCode', getReferralStats);
 
 
@@ -88,16 +86,23 @@ router.get("/referredBykod/:referralCode", getReferredBy);
 
 
 router.post('/register', upload.single('photo'),uploadToCloudinary, registerUser);
+
+
 router.post('/auth',   authUser);
+
+
 router.get('/admin/:referralCode', getUserByReferralCode);
 
+
 router.get('/user/:referralCode', getUserByReferralCodee);
+
 
 router.post("/system-settings", createSystemSettings);
 
 
-
 router.post('/logout', logoutUser);
+
+
 router.get('/', getUser);
 router
   .route('/profile')
