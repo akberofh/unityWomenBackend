@@ -13,10 +13,7 @@ const todoSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
-    thumbnail :{
-      type: String,
-  
-    },
+
     stock: {
       type: Number,
     },
@@ -26,9 +23,9 @@ const todoSchema = mongoose.Schema(
       index: true, 
     },
     photo: {
-      type: String, // base64 encoded ucun string qebul edir
-       
-    },
+      type: [String], // Array of photo paths
+    }
+  , 
     price: {
       type: Number,
       index: true, 

@@ -30,14 +30,11 @@ const productSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    thumbnail :{
-      type: String,
-  
-    },
+
     photo: {
-      type: String, // base64 encoded ucun string qebul edir
-       
-    },
+      type: [String], // Array of photo paths
+    }
+  , 
     price: {
       type: Number,
     },
