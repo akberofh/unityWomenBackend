@@ -6,8 +6,9 @@ const generateToken = (res, userId) => {
   });
 
   res.cookie('jwt', token, {
-    secure: 'false',
-    sameSite: 'none',
+    httpOnly: true,
+    secure: true,             // Mutlaka boolean true olmalı!
+    sameSite: 'None',
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
 };

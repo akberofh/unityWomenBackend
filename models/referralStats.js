@@ -1,13 +1,18 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const referralStatsSchema = new mongoose.Schema({
-  userId: mongoose.Schema.Types.ObjectId,
-  name: String,
-  email: String,
-  totalInvited: Number,
-  totalPaymentTrue: Number,
-  totalEarned: Number,
-  date: { type: Date, default: Date.now }
+const periodEarningSchema = new mongoose.Schema({
+  periodLabel: String,
+  userCount: Number,
+  earned: Number
 });
 
-export default mongoose.model("ReferralStats", referralStatsSchema);
+const referralStatsSchema = new mongoose.Schema({
+  referrerName: String,
+  referrerEmail: String,
+  count: Number, 
+  totalInvited: Number,
+  totalEarned: Number,
+  periodEarnings: [periodEarningSchema]
+});
+
+export default mongoose.model('ReferralStats', referralStatsSchema);
