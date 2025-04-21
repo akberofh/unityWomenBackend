@@ -23,7 +23,7 @@ const todoSchema = mongoose.Schema(
       index: true, 
     },
     photo: {
-      type: [String], // Array of photo paths
+      type: [String], 
     }
   , 
     price: {

@@ -549,7 +549,8 @@ export const getUserSalary = async (req, res) => {
 
       let salaryRate = 0;
 
-      if (oneSideTotal >= 10000) salaryRate = 0.006;
+      if (oneSideTotal >= 12000) salaryRate = 0.005;
+      else if (oneSideTotal >= 10000) salaryRate = 0.006;
       else if (oneSideTotal >= 4000) salaryRate = 0.009;
       else if (oneSideTotal >= 2000) salaryRate = 0.012;
       else if (oneSideTotal >= 1000) salaryRate = 0.015;
@@ -557,10 +558,10 @@ export const getUserSalary = async (req, res) => {
       else if (oneSideTotal >= 200) salaryRate = 0.018;
       else if (oneSideTotal >= 100) salaryRate = 0.03;
 
-
-
-      if (oneSideTotal >= 10000 && oneSideTotal <= 12000) {
-        rank = "Bas Direktor";
+      if (oneSideTotal > 13000) {
+        rank = "Qizil Direktor";
+      }  else if (total >= 10000 && total <= 12999.99) {
+        rank = "Bas direktor";
       } else if (oneSideTotal >= 6001 && oneSideTotal <= 9999.99) {
         rank = "Direktor";
       } else if (oneSideTotal >= 4000 && oneSideTotal <= 6000.99) {
@@ -676,8 +677,12 @@ export const getUserSalary = async (req, res) => {
     else if (total >= 250) { salaryRate = 0.071; }
     else if (total >= 60) { salaryRate = 0.068; }
 
-    if (total >= 10000 && total <= 12000) {
-      rank = "Bas Direktor";
+
+
+    if (total > 13000) {
+      rank = "Qizil Direktor";
+    } else if (total >= 10000 && total <= 12999.99) {
+      rank = "Bas direktor";
     } else if (total >= 6001 && total <= 9999.99) {
       rank = "Direktor";
     } else if (total >= 4000 && total <= 6000.99) {
@@ -754,195 +759,7 @@ export const getUserSalary = async (req, res) => {
 
 
 
-const generatePeriodss = () => {
-  const startDate = new Date("2025-04-01T00:00:00.000Z");
-  const endDate = new Date("2025-04-14T23:59:59.999Z"); // Günün sonu
-  return { startDate, endDate };
-};
 
-
-
-
-
-export const getAllSalariesss = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 7;
-    const skip = (page - 1) * limit;
-
-    const { startDate, endDate } = generatePeriodss();
-
-
-
-    // Sayfaya göre kullanıcıları getir
-    const filteredUsers = await User.find({
-      payment: true
-    }).skip(skip).limit(limit);
-
-    const getChain = async (refCode) => {
-      if (!refCode) return [];
-      return await User.find({
-        referralChain: refCode,
-        dailyEarningsDate: {
-          $gte: startDate,
-          $lte: endDate
-        }
-      });
-    };
-    
-
-    const results = [];
-
-    for (const user of filteredUsers) {
-      const children = await User.find({
-        referredBy: user.referralCode,
-        dailyEarningsDate: {
-          $gte: startDate,
-          $lte: endDate
-        }
-      });
-            const right = children[0];
-      const left = children[1];
-
-      const rightChain = await getChain(right?.referralCode);
-      const leftChain = await getChain(left?.referralCode);
-
-      const rightEarnings = right ? (right.dailyEarnings || 0) : 0;
-      const leftEarnings = left ? (left.dailyEarnings || 0) : 0;
-      const selfEarnings = user.dailyEarnings || 0;
-
-      const rightChainTotal = rightChain.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
-      const leftChainTotal = leftChain.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
-
-      const rightTotal = rightEarnings + rightChainTotal;
-      const leftTotal = leftEarnings + leftChainTotal;
-      const total = rightTotal + leftTotal + selfEarnings;
-
-      if (!right || !left) {
-        const oneSideTotal = (right ? rightTotal : leftTotal) + selfEarnings;
-        let salaryRate = 0;
-
-        let rank = "";
-
-
-        if (oneSideTotal >= 10000) salaryRate = 0.006;
-        else if (oneSideTotal >= 4000) salaryRate = 0.009;
-        else if (oneSideTotal >= 2000) salaryRate = 0.012;
-        else if (oneSideTotal >= 1000) salaryRate = 0.015;
-        else if (oneSideTotal >= 500) salaryRate = 0.018;
-        else if (oneSideTotal >= 200) salaryRate = 0.018;
-        else if (oneSideTotal >= 100) salaryRate = 0.03;
-
-        if (oneSideTotal >= 10000 && oneSideTotal <= 12000) {
-          rank = "Bas Direktor";
-        } else if (oneSideTotal >= 6001 && oneSideTotal <= 9999.99) {
-          rank = "Direktor";
-        } else if (oneSideTotal >= 4000 && oneSideTotal <= 6000.99) {
-          rank = "Bas Lider";
-        } else if (oneSideTotal >= 2001 && oneSideTotal <= 3999.99) {
-          rank = "Iki Qat Lider";
-        } else if (oneSideTotal >= 1001 && oneSideTotal <= 2000.99) {
-          rank = "Lider";
-        } else if (oneSideTotal >= 501 && oneSideTotal <= 1000.99) {
-          rank = "Bas Menecer";
-        } else if (oneSideTotal >= 251 && oneSideTotal <= 500.99) {
-          rank = "Menecer";
-        } else if (oneSideTotal >= 121 && oneSideTotal <= 250.99) {
-          rank = "Bas Meslehetci";
-        } else if (oneSideTotal >= 60 && oneSideTotal <= 120.99) {
-          rank = "Meslehetci";
-        } else {
-          salaryRate = 0;
-          rank = "Yeni üzv";
-        }
-
-        const salary = (oneSideTotal * salaryRate).toFixed(2);
-
-        results.push({
-          name: user.name,
-          email: user.email,
-          mode: "Single Side",
-          total: oneSideTotal,
-          rightTotal,
-          leftTotal,
-          salary: Number(salary),
-          rank,
-          rate: salaryRate * 100,
-        });
-        continue;
-      }
-
-      const big = Math.max(rightTotal, leftTotal);
-      const ratio = big / (rightTotal + leftTotal);
-      let splitFactor = 1;
-
-      if (ratio >= 0.96) splitFactor = 3;
-      else if (ratio >= 0.90) splitFactor = 2.5;
-      else if (ratio >= 0.80) splitFactor = 2;
-
-      let salaryRate = 0;
-      let rank = "";
-
-      if (total >= 12000) { salaryRate = 0.105; }
-      else if (total >= 8000) { salaryRate = 0.10; }
-      else if (total >= 6000) { salaryRate = 0.09; }
-      else if (total >= 4000) { salaryRate = 0.085; }
-      else if (total >= 1000) { salaryRate = 0.078; }
-      else if (total >= 500) { salaryRate = 0.073; }
-      else if (total >= 250) { salaryRate = 0.071; }
-      else if (total >= 60) { salaryRate = 0.068; }
-
-
-      if (total >= 10000 && total <= 12000) {
-        rank = "Bas Direktor";
-      } else if (total >= 6001 && total <= 9999.99) {
-        rank = "Direktor";
-      } else if (total >= 4000 && total <= 6000.99) {
-        rank = "Bas Lider";
-      } else if (total >= 2001 && total <= 3999.99) {
-        rank = "Iki Qat Lider";
-      } else if (total >= 1001 && total <= 2000.99) {
-        rank = "Lider";
-      } else if (total >= 501 && total <= 1000.99) {
-        rank = "Bas Menecer";
-      } else if (total >= 251 && total <= 500.99) {
-        rank = "Menecer";
-      } else if (total >= 121 && total <= 250.99) {
-        rank = "Bas Meslehetci";
-      } else if (total >= 60 && total <= 120.99) {
-        rank = "Meslehetci";
-      } else {
-        salaryRate = 0;
-        rank = "Yeni üzv";
-      }
-
-      const salary = ((total * salaryRate) / splitFactor).toFixed(2);
-
-      results.push({
-        name: user.name,
-        email: user.email,
-        mode: "Dual Side",
-        total,
-        rightTotal,
-        leftTotal,
-        salary: Number(salary),
-        rank,
-        rate: salaryRate * 100,
-        splitFactor
-      });
-    }
-
-    res.json({
-      currentPage: page,
-      limit: limit,
-      results
-    });
-
-  } catch (error) {
-    console.error("Hata:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
-  }
-};
 
 
 
