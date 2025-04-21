@@ -558,7 +558,7 @@ export const getUserSalary = async (req, res) => {
       else if (oneSideTotal >= 200) salaryRate = 0.018;
       else if (oneSideTotal >= 100) salaryRate = 0.03;
 
-      if (oneSideTotal > 13000) {
+      if (oneSideTotal >= 13000) {
         rank = "Qizil Direktor";
       }  else if (total >= 10000 && total <= 12999.99) {
         rank = "Bas direktor";
@@ -679,7 +679,7 @@ export const getUserSalary = async (req, res) => {
 
 
 
-    if (total > 13000) {
+    if (total >= 13000) {
       rank = "Qizil Direktor";
     } else if (total >= 10000 && total <= 12999.99) {
       rank = "Bas direktor";
