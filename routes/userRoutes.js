@@ -14,7 +14,7 @@ import {
   getReferralStats,
   getUserSalary,
 } from '../controllers/userController.js';
-import { userControlAuth } from '../middleware/authMiddleware.js';
+import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
@@ -22,7 +22,7 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-router.put('/update/:id', upload.single('photo'), uploadToCloudinary, async (req, res) => {
+router.put('/update/:id', userControlAuth, adminControlAuth,  upload.single('photo'), uploadToCloudinary, async (req, res) => {
   try {
     const { name, email, payment, password,referralLinkOwner } = req.body;
 
@@ -95,7 +95,7 @@ router.get('/admin/:referralCode', getUserByReferralCode);
 router.get('/user/:referralCode', getUserByReferralCodee);
 
 
-router.post("/system-settings", createSystemSettings);
+router.post("/system-settings", userControlAuth, adminControlAuth, createSystemSettings);
 
 
 router.post('/logout', logoutUser);
