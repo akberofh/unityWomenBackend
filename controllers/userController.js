@@ -244,8 +244,7 @@ const updateUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
+      user.card = req.body.card || user.card;
       if (req.file) {
         // Cloudinary'den alınan URL'yi kullanıcıya kaydet
         user.photo = req.fileUrl;  // Cloudinary URL'si
@@ -256,22 +255,26 @@ const updateUserProfile = async (req, res) => {
       }
 
 
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
 
       const updatedUser = await user.save();
 
       res.json({
         _id: updatedUser._id,
-        referredBy: updatedUser.referredBy,
         name: updatedUser.name,
-        referralChain: updatedUser.referralChain,
-        referralCount: updatedUser.referralCount,
-        referralLink: updatedUser.referralLink,
-        referralCode: updatedUser.referralCode,
-        email: updatedUser.email,
         photo: updatedUser.photo,
+        finCode: updatedUser.finCode,
+        card: updatedUser.card,
+        email: updatedUser.email,
+        gender : updatedUser.gender,
+        faze : updatedUser.faze,
+        phone : updatedUser.phone,
+        payment : updatedUser.payment,
+        userType : updatedUser.userType,
+        referralCode: updatedUser.referralCode,
+        referredBy: updatedUser.referredBy,
+        referralLink ,
+        referralChain: updatedUser.referralChain,
+        referralLinkOwner: updatedUser.referralLinkOwner,
       });
     } else {
       res.status(404).json({ message: 'Kullanıcı Bulunamadı' });
