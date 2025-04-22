@@ -31,6 +31,13 @@ const adminControlAuth = (req, res, next) => {
 };
 
 
+const adminorAdminsControlAuth = (req, res, next) => {
+  if (req.user && (req.user.userType === 'admin' || req.user.userType === 'adminstrator')) {
+    next(); 
+  } else {
+    res.status(403).json({ message: 'Forbidden - Admin access required' });
+  }
+};
 
 
 
@@ -38,4 +45,4 @@ const adminControlAuth = (req, res, next) => {
 
 
 
-export { userControlAuth, adminControlAuth  };
+export { userControlAuth, adminControlAuth  ,adminorAdminsControlAuth};
