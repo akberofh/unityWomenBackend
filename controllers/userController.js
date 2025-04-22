@@ -272,7 +272,7 @@ const updateUserProfile = async (req, res) => {
         userType : updatedUser.userType,
         referralCode: updatedUser.referralCode,
         referredBy: updatedUser.referredBy,
-        referralLink ,
+        referralLink:user.referralLink ,
         referralChain: updatedUser.referralChain,
         referralLinkOwner: updatedUser.referralLinkOwner,
       });
