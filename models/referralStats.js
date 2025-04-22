@@ -7,6 +7,7 @@ const periodEarningSchema = new mongoose.Schema({
 });
 
 const referralStatsSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
   referrerName: String,
   referrerEmail: String,
   count: Number, 

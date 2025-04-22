@@ -74,6 +74,7 @@ const run = async () => {
       });
 
       const statDoc = new ReferralStats({
+        userId: user._id,
         referrerName: user.name,
         referrerEmail: user.email,
         referrerPhoto: user.photo,
