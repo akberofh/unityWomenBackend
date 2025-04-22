@@ -100,6 +100,16 @@ router.post("/system-settings", userControlAuth, adminControlAuth, createSystemS
 
 router.post('/logout', logoutUser);
 
+router.get('/getuser/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server xətası' });
+  }
+});
 
 router.get('/', getUser);
 router
