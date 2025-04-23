@@ -32,45 +32,41 @@ const qolbaqAdd = async (req, res) => {
 
 
 const qolbaqUpdate = async (req, res) => {
-  const { id } = req.params; // Parametrelerden ID'yi al
-  try {
-    // Belirtilen ID ile bir Pubg kaydı bul
-    const qolbaq = await QolbaqModel.findById(id);
+  const { id } = req.params;
 
+  try {
+    const qolbaq = await QolbaqModel.findById(id);
     if (!qolbaq) {
       return res.status(404).json({ message: 'qolbaq post not found' });
     }
 
-    // Güncelleme işleminden önce mevcut veriyi kontrol et
     console.log("Önceki Veri: ", qolbaq);
 
-    if (req.file || req.fileUrl) {
-      qolbaq.photo = undefined; // köhnə şəkil silinir
+    // Yeni şəkil gəlirsə, köhnəsini MongoDB-dən sil
+    if ((req.file || req.fileUrl) && qolbaq.photo) {
+      qolbaq.photo = undefined;
+    }
 
-      // Yeni şəkil yazılır
+    // Yeni şəkil əlavə et
+    if (req.fileUrl) {
       qolbaq.photo = {
-        url: req.fileUrl?.url || '',
-        public_id: req.fileUrl?.public_id || '',
+        url: req.fileUrl.url || '',
+        public_id: req.fileUrl.public_id || '',
       };
     }
 
-    // Gelen verileri güncelle
-    qolbaq.title = req.body.title !== undefined ? req.body.title : qolbaq.title;
-    qolbaq.price = req.body.price !== undefined ? req.body.price : qolbaq.price;
-    qolbaq.distance = req.body.distance !== undefined ? req.body.distance : qolbaq.distance;
-    qolbaq.stock = req.body.stock !== undefined ? req.body.stock : qolbaq.stock;
-    qolbaq.catagory = req.body.catagory !== undefined ? req.body.catagory : qolbaq.catagory;
-    qolbaq.description = req.body.description !== undefined ? req.body.description : qolbaq.description;
+    // Digər sahələri yenilə
+    qolbaq.title = req.body.title ?? qolbaq.title;
+    qolbaq.price = req.body.price ?? qolbaq.price;
+    qolbaq.distance = req.body.distance ?? qolbaq.distance;
+    qolbaq.stock = req.body.stock ?? qolbaq.stock;
+    qolbaq.catagory = req.body.catagory ?? qolbaq.catagory;
+    qolbaq.description = req.body.description ?? qolbaq.description;
 
-
-
-    // Güncellenmiş dest kaydını kaydet
     const updateQolbaq = await qolbaq.save();
 
-    // Güncellenmeden sonraki veriyi kontrol et
     console.log("Güncellenmiş Veri: ", updateQolbaq);
 
-    // Güncellenmiş veriyi döndür
     res.json({
       _id: updateQolbaq._id,
       title: updateQolbaq.title,
@@ -79,13 +75,14 @@ const qolbaqUpdate = async (req, res) => {
       stock: updateQolbaq.stock,
       description: updateQolbaq.description,
       photo: updateQolbaq.photo,
-      price: updateQolbaq.price, // Fiyatı da yanıt olarak ekleyin
+      price: updateQolbaq.price,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 const getQolbaq = async (req, res) => {
