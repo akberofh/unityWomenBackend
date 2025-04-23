@@ -32,12 +32,12 @@ const upload = multer({
 });
 
 const uploadToCloudinary = async (req, res, next) => {
-  if (!req.files || req.files.length === 0) {
-    return next();
-  }
-
   try {
-    const uploadPromises = req.files.map(file => {
+    const files = req.files || (req.file ? [req.file] : []);
+
+    if (files.length === 0) return next();
+
+    const uploadPromises = files.map((file) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinaryV2.uploader.upload_stream(
           {
@@ -49,15 +49,21 @@ const uploadToCloudinary = async (req, res, next) => {
             resolve(result.secure_url);
           }
         );
-
         stream.end(file.buffer);
       });
     });
 
     const uploadedUrls = await Promise.all(uploadPromises);
-    req.fileUrls = uploadedUrls;
-    next();
 
+    if (req.file) {
+      // single file yollandısa, string təyin et
+      req.fileUrl = uploadedUrls[0];
+    } else {
+      // birdən çox file yollandısa array təyin et
+      req.fileUrls = uploadedUrls;
+    }
+
+    next();
   } catch (error) {
     console.error('Cloudinary Upload Error:', error);
     res.status(500).send("Cloudinary upload error: " + error.message);
