@@ -53,8 +53,8 @@ const qolbaqUpdate = async (req, res) => {
     qolbaq.description = req.body.description !== undefined ? req.body.description : qolbaq.description;
 
     // Eğer bir fotoğraf dosyası mevcutsa, base64 formatında güncelle
-    if (req.file) {
-      qolbaq.photo = req.fileUrl;  // Cloudinary URL'si
+    if (req.fileUrls && req.fileUrls.length > 0) {
+      qolbaq.photo = req.fileUrls;  // array of Cloudinary image URLs
     }
 
     // Güncellenmiş dest kaydını kaydet
