@@ -17,7 +17,7 @@ router.get('/id/:id', getByIdQolbaq)
 
 router.delete('/:id', userControlAuth, adminorAdminsControlAuth, deleteById)
 
-router.put('/:id', userControlAuth, adminorAdminsControlAuth, upload.single('photo'), uploadToCloudinary,  qolbaqUpdate);
+router.put('/:id', userControlAuth, adminorAdminsControlAuth, upload.array('photo'), uploadToCloudinary,  qolbaqUpdate);
 
 
 router.patch('/:id', (req, res) => {
