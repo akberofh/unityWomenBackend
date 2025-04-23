@@ -11,8 +11,10 @@ const confirmedCartSchema = new mongoose.Schema({
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
       quantity: { type: Number, required: true },
-      photo: { type: String},
-      totalPrice: {
+      photo: {
+        type: [String], // Array of photo paths
+      }
+    ,        totalPrice: {
         type: Number,
       },
       thumbnail: { type: String },

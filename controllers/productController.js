@@ -148,9 +148,8 @@ const confirmCart = async (req, res) => {
           quantity: item.quantity,
           photo: item.photo,
           totalPrice: item.totalPrice,
-          thumbnail: item.thumbnail,
           paymentStatus: 'pending',
-          previousStock: product.stock + item.quantity, // Önceki stok miktarı
+          previousStock: product.stock + item.quantity, 
         });
 
         // Sepet verisini güncelle
