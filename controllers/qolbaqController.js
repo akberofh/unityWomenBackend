@@ -44,6 +44,16 @@ const qolbaqUpdate = async (req, res) => {
     // Güncelleme işleminden önce mevcut veriyi kontrol et
     console.log("Önceki Veri: ", qolbaq);
 
+    if (req.file || req.fileUrl) {
+      qolbaq.photo = undefined; // köhnə şəkil silinir
+
+      // Yeni şəkil yazılır
+      qolbaq.photo = {
+        url: req.fileUrl?.url || '',
+        public_id: req.fileUrl?.public_id || '',
+      };
+    }
+
     // Gelen verileri güncelle
     qolbaq.title = req.body.title !== undefined ? req.body.title : qolbaq.title;
     qolbaq.price = req.body.price !== undefined ? req.body.price : qolbaq.price;
@@ -52,10 +62,7 @@ const qolbaqUpdate = async (req, res) => {
     qolbaq.catagory = req.body.catagory !== undefined ? req.body.catagory : qolbaq.catagory;
     qolbaq.description = req.body.description !== undefined ? req.body.description : qolbaq.description;
 
-    // Eğer bir fotoğraf dosyası mevcutsa, base64 formatında güncelle
-    if (req.fileUrls && req.fileUrls.length > 0) {
-      qolbaq.photo = req.fileUrls;  // array of Cloudinary image URLs
-    }
+
 
     // Güncellenmiş dest kaydını kaydet
     const updateQolbaq = await qolbaq.save();
