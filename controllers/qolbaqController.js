@@ -54,9 +54,11 @@ const qolbaqUpdate = async (req, res) => {
 
     // Eğer bir fotoğraf dosyası mevcutsa, base64 formatında güncelle
     if (req.fileUrls && req.fileUrls.length > 0) {
-      // köhnə şəkilləri silib yeniləri əlavə edirik
-      qolbaq.photo = req.fileUrls.map(file => file.url);
+      qolbaq.photo = []; 
+      qolbaq.photo.push(...req.fileUrls); 
     }
+
+    
 
     // Güncellenmiş dest kaydını kaydet
     const updateQolbaq = await qolbaq.save();
