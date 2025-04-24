@@ -7,12 +7,12 @@ import { addUserProduct, deleteUserProduct, getUserProduct,updateStock,confirmCa
 
 const router = express.Router();
 
-router.post('/', userControlAuth,upload.single('photo'), uploadToCloudinary,addUserProduct);
-router.get('/', userControlAuth, getUserProduct);
-router.delete('/:id', userControlAuth, deleteUserProduct);
-router.put('/:productId', userControlAuth,updateStock);
-router.post('/confirm', userControlAuth, confirmCart);
-router.post('/payment', userControlAuth, updatePaymentStatus);
+router.post('/', upload.single('photo'), uploadToCloudinary,addUserProduct);
+router.get('/',  getUserProduct);
+router.delete('/:id',  deleteUserProduct);
+router.put('/:productId', updateStock);
+router.post('/confirm',  confirmCart);
+router.post('/payment',  updatePaymentStatus);
 
 
 
