@@ -28,10 +28,24 @@ connectDB();
 const app = express();
 app.use(express.json());
 
+const allowedOrigins = [
+  'https://unity-women.vercel.app',
+  'https://unity-women-admin.vercel.app',
+  'https://unitywomen.com',
+  'https://www.unitywomen.com',
+];
+
 app.use(cors({
-  origin: ['https://unity-women.vercel.app','https://unity-women-admin.vercel.app','https://unitywomen.com','https://www.unitywomen.com'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy: This origin is not allowed'));
+    }
+  },
   credentials: true,
 }));
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
