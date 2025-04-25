@@ -42,7 +42,6 @@ const addUserProduct = async (req, res) => {
         quantity: 1,
         catagory: product.catagory,
         stock: product.stock,
-        thumbnail: product.thumbnail,
         photo: product.photo,
         price: product.price,
         totalPrice: product.price,

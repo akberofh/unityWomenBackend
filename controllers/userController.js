@@ -727,6 +727,9 @@ export const getUserSalary = async (req, res) => {
       );
 
       const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+
+      
+
       const periodSalary = ((periodTotal * salaryRate) / splitFactor).toFixed(2);
 
       return {
