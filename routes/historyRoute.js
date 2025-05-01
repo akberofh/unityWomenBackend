@@ -1,5 +1,5 @@
 import express from 'express';
-import Salary from '../models/salaryModel.js';
+import Salary from '../models/yenisalaryModel.js';
 import { getMyTeamSalariess } from '../controllers/salaryController.js';
 import { userControlAuth } from '../middleware/authMiddleware.js';
 
