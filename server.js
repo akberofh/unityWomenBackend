@@ -14,6 +14,7 @@ import mongoose from 'mongoose';
 import paymentRoutes from './routes/paymentRoute.js'
 import HesablamaRouter from './routes/hesabatRouter.js'
 import QazancRouter from './routes/qazancRouter.js'
+import HistoryRouter from './routes/historyRoute.js'
 
 
 dotenv.config();
@@ -63,6 +64,7 @@ app.use('/api/qolbaq', qolbaqRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api', HesablamaRouter);
 app.use('/api', QazancRouter);
+app.use('/api', HistoryRouter);
 
 app.get("/", (req, res) => {
   res.json({
