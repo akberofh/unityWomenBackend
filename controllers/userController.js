@@ -381,7 +381,30 @@ function generatePeriods(startDate, endDate) {
 
   while (currentStart < endDate) {
     const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 14); // 15 gün (bugün dahil)
+    currentEnd.setDate(currentEnd.getDate() + 6); // 15 gün (bugün dahil)
+    currentEnd.setHours(23, 59, 59, 999);
+
+    periods.push({
+      start: new Date(currentStart),
+      end: new Date(currentEnd > endDate ? endDate : currentEnd)
+    });
+
+    // bir sonraki dönem
+    currentStart.setDate(currentStart.getDate() + 15);
+    currentStart.setHours(0, 0, 0, 0);
+  }
+
+  return periods;
+}
+
+function generatePeriodss(startDate, endDate) {
+  const periods = [];
+  let currentStart = new Date(startDate);
+  currentStart.setHours(0, 0, 0, 0);
+
+  while (currentStart < endDate) {
+    const currentEnd = new Date(currentStart);
+    currentEnd.setDate(currentEnd.getDate() + 29); // 15 gün (bugün dahil)
     currentEnd.setHours(23, 59, 59, 999);
 
     periods.push({
@@ -512,8 +535,13 @@ export const getUserSalary = async (req, res) => {
       return res.status(403).json({ message: "Ödəniş edilməyib. Maaş hesablana bilməz." });
     }
 
+    const systemSettings = await SystemSettings.findOne();
+    const systemStart = new Date(systemSettings.referralSystemStartDate);
+    const now = new Date();
+    const periods = generatePeriodss(systemStart, now);
 
-    const children = await User.find({ referredBy: referralCode });
+    const referral = user.referralCode;
+    const children = await User.find({ referredBy: referral });
     const right = children[0];
     const left = children[1];
 
@@ -534,23 +562,24 @@ export const getUserSalary = async (req, res) => {
 
     const rightTotal = rightEarnings + rightChainTotal;
     const leftTotal = leftEarnings + leftChainTotal;
-
     const total = rightTotal + leftTotal + selfEarnings;
 
     const hasRight = right && rightTotal > 0;
     const hasLeft = left && leftTotal > 0;
 
-    // Eğer sadece tek kol varsa:
+    let mode = hasRight && hasLeft ? "Dual Side" : "Single Side";
+    let salaryRate = 0;
+    let salary = 0;
+    let rank = "";
+    let splitFactor = 1;
+    let side = hasRight ? "Right" : "Left";
+
+    const oneSideTotal = (hasRight ? rightTotal : leftTotal) + selfEarnings;
+
     if (!hasRight || !hasLeft) {
-      const oneSideTotal = (right ? rightTotal : leftTotal) + selfEarnings;
-
       if (oneSideTotal < 100) {
-        return res.json({ message: "Toplam günlük kazanç 100 AZN altında. Maaş hesaplanamaz." });
+        return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur." });
       }
-
-      let rank = "";
-
-      let salaryRate = 0;
 
       if (oneSideTotal >= 12000) salaryRate = 0.005;
       else if (oneSideTotal >= 10000) salaryRate = 0.006;
@@ -561,203 +590,107 @@ export const getUserSalary = async (req, res) => {
       else if (oneSideTotal >= 200) salaryRate = 0.018;
       else if (oneSideTotal >= 100) salaryRate = 0.03;
 
-      if (oneSideTotal >= 13000) {
-        rank = "Qizil Direktor";
-      }  else if (total >= 10000 && total <= 12999.99) {
-        rank = "Bas direktor";
-      } else if (oneSideTotal >= 6001 && oneSideTotal <= 9999.99) {
-        rank = "Direktor";
-      } else if (oneSideTotal >= 4000 && oneSideTotal <= 6000.99) {
-        rank = "Bas Lider";
-      } else if (oneSideTotal >= 2001 && oneSideTotal <= 3999.99) {
-        rank = "Iki Qat Lider";
-      } else if (oneSideTotal >= 1001 && oneSideTotal <= 2000.99) {
-        rank = "Lider";
-      } else if (oneSideTotal >= 501 && oneSideTotal <= 1000.99) {
-        rank = "Bas Menecer";
-      } else if (oneSideTotal >= 251 && oneSideTotal <= 500.99) {
-        rank = "Menecer";
-      } else if (oneSideTotal >= 121 && oneSideTotal <= 250.99) {
-        rank = "Bas Meslehetci";
-      } else if (oneSideTotal >= 60 && oneSideTotal <= 120.99) {
-        rank = "Meslehetci";
-      } else {
-        salaryRate = 0;
-        rank = "Yeni üzv";
+      if (oneSideTotal >= 13000) rank = "Qizil Direktor";
+      else if (oneSideTotal >= 10000) rank = "Bas Direktor";
+      else if (oneSideTotal >= 6001) rank = "Direktor";
+      else if (oneSideTotal >= 4000) rank = "Bas Lider";
+      else if (oneSideTotal >= 2001) rank = "Iki Qat Lider";
+      else if (oneSideTotal >= 1001) rank = "Lider";
+      else if (oneSideTotal >= 501) rank = "Bas Menecer";
+      else if (oneSideTotal >= 251) rank = "Menecer";
+      else if (oneSideTotal >= 121) rank = "Bas Meslehetci";
+      else if (oneSideTotal >= 60) rank = "Meslehetci";
+      else rank = "Yeni üzv";
+
+      salary = (oneSideTotal * salaryRate).toFixed(2);
+    } else {
+      if (total < 60) {
+        return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur." });
       }
 
-      const salary = (oneSideTotal * salaryRate).toFixed(2);
+      const big = Math.max(rightTotal, leftTotal);
+      const ratio = big / (rightTotal + leftTotal);
 
+      if (ratio >= 0.96) splitFactor = 3;
+      else if (ratio >= 0.90) splitFactor = 2.5;
+      else if (ratio >= 0.80) splitFactor = 2;
 
+      if (total >= 12000) salaryRate = 0.105;
+      else if (total >= 8000) salaryRate = 0.10;
+      else if (total >= 6000) salaryRate = 0.09;
+      else if (total >= 4000) salaryRate = 0.085;
+      else if (total >= 1000) salaryRate = 0.078;
+      else if (total >= 500) salaryRate = 0.073;
+      else if (total >= 250) salaryRate = 0.071;
+      else if (total >= 60) salaryRate = 0.068;
 
-      const systemSettings = await SystemSettings.findOne();
-      const systemStart = new Date(systemSettings.referralSystemStartDate);
-      const now = new Date();
+      if (total >= 13000) rank = "Qizil Direktor";
+      else if (total >= 10000) rank = "Bas Direktor";
+      else if (total >= 6001) rank = "Direktor";
+      else if (total >= 4000) rank = "Bas Lider";
+      else if (total >= 2001) rank = "Iki Qat Lider";
+      else if (total >= 1001) rank = "Lider";
+      else if (total >= 501) rank = "Bas Menecer";
+      else if (total >= 251) rank = "Menecer";
+      else if (total >= 121) rank = "Bas Meslehetci";
+      else if (total >= 60) rank = "Meslehetci";
+      else rank = "Yeni üzv";
 
-      const periods = generatePeriods(systemStart, now);
-
-
-      const periodSalaries = periods.map(period => {
-        const usersInPeriod = [];
-
-        // Sağ ve sol kullanıcılarını kontrol et ve yalnızca mevcut olanları ekle
-        if (right) {
-          usersInPeriod.push(right);  // Sağ kullanıcısı varsa ekle
-        }
-
-        if (left) {
-          usersInPeriod.push(left);   // Sol kullanıcısı varsa ekle
-        }
-
-        // Zincirleri (rightChain ve leftChain) ekle
-        if (rightChain && rightChain.length > 0) {
-          usersInPeriod.push(...rightChain);  // Sağ zincirde veriler varsa ekle
-        }
-
-        if (leftChain && leftChain.length > 0) {
-          usersInPeriod.push(...leftChain);  // Sol zincirde veriler varsa ekle
-        }
-
-        // Ana kullanıcıyı ekle
-        usersInPeriod.push(user);
-
-        // Sonuç olarak kullanıcılar ekleniyor
-
-
-        const usersInThisPeriod = usersInPeriod.filter(u =>
-          u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
-        );
-
-        const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
-        const periodSalary = (periodTotal * salaryRate).toFixed(2);
-
-        return {
-          periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
-          salary: Number(periodSalary),
-          rank,
-          total: Number(periodTotal),
-          rate: salaryRate * 100,
-          name: user.name,
-          email: user.email,
-          photo: user.photo
-        };
-
-      });
-
-
-      return res.json({
-        mode: "Single Side",
-        side: right ? "Right" : "Left",
-        total: oneSideTotal,
-        salary: Number(salary),
-        rank,
-        rate: salaryRate * 100,
-        periodSalaries,
-      });
+      salary = ((total * salaryRate) / splitFactor).toFixed(2);
     }
 
-    if (total < 60) {
-      return res.json({ message: "Toplam günlük kazanç 60 AZN altında. Maaş hesaplanamaz." });
-    }
-
-    const big = Math.max(rightTotal, leftTotal);
-    const ratio = big / (rightTotal + leftTotal);
-    let splitFactor = 1;
-
-    if (ratio >= 0.96) splitFactor = 3;
-    else if (ratio >= 0.90) splitFactor = 2.5;
-    else if (ratio >= 0.80) splitFactor = 2;
-
-    let salaryRate = 0;
-    let rank = "";
-
-    if (total >= 12000) { salaryRate = 0.105; }
-    else if (total >= 8000) { salaryRate = 0.10; }
-    else if (total >= 6000) { salaryRate = 0.09; }
-    else if (total >= 4000) { salaryRate = 0.085; }
-    else if (total >= 1000) { salaryRate = 0.078; }
-    else if (total >= 500) { salaryRate = 0.073; }
-    else if (total >= 250) { salaryRate = 0.071; }
-    else if (total >= 60) { salaryRate = 0.068; }
-
-
-
-    if (total >= 13000) {
-      rank = "Qizil Direktor";
-    } else if (total >= 10000 && total <= 12999.99) {
-      rank = "Bas direktor";
-    } else if (total >= 6001 && total <= 9999.99) {
-      rank = "Direktor";
-    } else if (total >= 4000 && total <= 6000.99) {
-      rank = "Bas Lider";
-    } else if (total >= 2001 && total <= 3999.99) {
-      rank = "Iki Qat Lider";
-    } else if (total >= 1001 && total <= 2000.99) {
-      rank = "Lider";
-    } else if (total >= 501 && total <= 1000.99) {
-      rank = "Bas Menecer";
-    } else if (total >= 251 && total <= 500.99) {
-      rank = "Menecer";
-    } else if (total >= 121 && total <= 250.99) {
-      rank = "Bas Meslehetci";
-    } else if (total >= 60 && total <= 120.99) {
-      rank = "Meslehetci";
-    } else {
-      salaryRate = 0;
-      rank = "Yeni üzv";
-    }
-
-    const salary = ((total * salaryRate) / splitFactor).toFixed(2);
-
-    const systemSettings = await SystemSettings.findOne();
-    const systemStart = new Date(systemSettings.referralSystemStartDate);
-    const now = new Date();
-
-    const periods = generatePeriods(systemStart, now);
+    const usersInPeriod = [...rightChain, ...leftChain];
+    if (right) usersInPeriod.push(right);
+    if (left) usersInPeriod.push(left);
+    usersInPeriod.push(user);
 
     const periodSalaries = periods.map(period => {
-      const usersInPeriod = [...rightChain, ...leftChain];
-
-      if (right) usersInPeriod.push(right);
-      if (left) usersInPeriod.push(left);
-      usersInPeriod.push(user);
-
       const usersInThisPeriod = usersInPeriod.filter(u =>
         u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
       );
-
       const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+      const periodRightTotal = usersInThisPeriod.filter(u => rightChain.includes(u) || u._id.equals(right?._id)).reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+      const periodLeftTotal = usersInThisPeriod.filter(u => leftChain.includes(u) || u._id.equals(left?._id)).reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
 
-      
-
-      const periodSalary = ((periodTotal * salaryRate) / splitFactor).toFixed(2);
+      const periodSalary =
+        mode === "Single Side"
+          ? (periodTotal * salaryRate).toFixed(2)
+          : ((periodTotal * salaryRate) / splitFactor).toFixed(2);
 
       return {
         periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
         salary: Number(periodSalary),
         rank,
-
-        total: Number(periodTotal),
+        total: periodTotal,
+        rightTotal: periodRightTotal,
+        leftTotal: periodLeftTotal,
+        rate: salaryRate * 100,
         name: user.name,
         email: user.email,
-        photo: user.photo
+        photo: user.photo,
+        periodStart: period.start,
+        periodEnd: period.end
       };
     });
 
     return res.json({
-      mode: "Dual Side",
-      total,
-      rightTotal,
-      leftTotal,
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      mode,
+      side,
+      total: mode === "Single Side" ? oneSideTotal : total,
       salary: Number(salary),
       rank,
       rate: salaryRate * 100,
       splitFactor,
-      periodSalaries
+      periodSalaries,
+      rightTotal,
+      leftTotal
     });
 
   } catch (error) {
-    console.error("Salary hesaplama hatası:", error);
+    console.error("Toplu maaş hesaplama hatası:", error);
     res.status(500).json({ error: "Sunucu hatası" });
   }
 };
