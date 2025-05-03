@@ -19,7 +19,6 @@ const confirmedCartSchema = new mongoose.Schema({
       },
 
       title: { type: String },
-      previousStock: { type: Number, required: true }, // Önceki stok miktarı
     }
   ],
   confirmedAt: { type: Date, default: Date.now },
