@@ -3,40 +3,40 @@ import ConfirmedCart from '../models/confirmedCartModel.js';
 import Product from '../models/productModel.js';
 import QolbaqModel from '../models/qolbaqModel.js';
 
-cron.schedule('*/1 * * * *', async () => { // Her dakika çalışacak
+cron.schedule('*/1 * * * *', async () => {
   console.log('Cron job çalıştı ve sepetleri kontrol ediyor...');
-  const oneMinuteAgo = new Date();
-  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 5);  // 1 dakika öncesi
+  const fiveMinutesAgo = new Date();
+  fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
   try {
-    // 'pending' ödeme durumu olan ve 1 dakikadan eski sepetleri al
+    // 5 dakikadan eski ve 'failed' veya 'paid' olan sepetleri al
     const expiredCarts = await ConfirmedCart.find({
-      confirmedAt: { $lt: oneMinuteAgo },
-      paymentStatus: 'pending',
+      confirmedAt: { $lt: fiveMinutesAgo },
+      paymentStatus: { $in: ['failed', 'paid'] },
     });
 
     for (let cart of expiredCarts) {
       console.log(`Sepet bulundu ve siliniyor: ${cart._id}`);
 
-      // Sepetteki her ürün için işlemleri yap
       for (let item of cart.products) {
-        // Ürün bilgilerini `Product` üzerinden al
         const product = await Product.findById(item.productId);
         if (product) {
           console.log(`Product modelinde ürün bulundu: ${product.title} (ID: ${item.productId})`);
 
-          // QolbaqModel'deki ürünün stok bilgisini güncelle
-          const qolbaqProduct = await QolbaqModel.findById(product.productId); // Burada doğru ID'yi kullanıyoruz
-          if (qolbaqProduct) {
-            console.log(`QolbaqModel'de stok güncelleniyor: ${qolbaqProduct.title}`);
-            qolbaqProduct.stock += item.quantity;  // Sepetteki ürün miktarı kadar stok artırılır
-            await qolbaqProduct.save();  // Güncellenen stok kaydedilir
-          } else {
-            console.log(`QolbaqModel'de ürün bulunamadı: ${product.productId}`);
+          // Sadece 'failed' ise stoka geri ekle
+          if (cart.paymentStatus === 'failed') {
+            const qolbaqProduct = await QolbaqModel.findById(product.productId);
+            if (qolbaqProduct) {
+              console.log(`QolbaqModel'de stok güncelleniyor: ${qolbaqProduct.title}`);
+              qolbaqProduct.stock += item.quantity;
+              await qolbaqProduct.save();
+            } else {
+              console.log(`QolbaqModel'de ürün bulunamadı: ${product.productId}`);
+            }
           }
 
           // Product modelinden ürünü sil
-          await Product.findByIdAndDelete(item.productId); // Sepetteki ürünü sil
+          await Product.findByIdAndDelete(item.productId);
           console.log(`Product modelinden ürün silindi: ${item.productId}`);
         } else {
           console.log(`Product modelinde ürün bulunamadı: ${item.productId}`);

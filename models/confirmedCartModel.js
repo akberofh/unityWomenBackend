@@ -14,7 +14,7 @@ const confirmedCartSchema = new mongoose.Schema({
       photo: {
         type: [String], // Array of photo paths
       }
-    ,        totalPrice: {
+      , totalPrice: {
         type: Number,
       },
       thumbnail: { type: String },
