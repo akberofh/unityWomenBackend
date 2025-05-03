@@ -87,7 +87,7 @@ const updateStock = async (req, res) => {
 
     // Miktar ve toplam fiyat güncellemesi
     cartItem.quantity = req.body.quantity;
-    cartItem.totalPrice = cartItem.price * cartItem.quantity;
+    cartItem.totalPrice = Math.round(cartItem.price * cartItem.quantity * 100) / 100;
     await cartItem.save();
 
     res.json({ message: 'Ürün başarıyla güncellendi', product: cartItem });
