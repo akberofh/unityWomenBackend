@@ -3,31 +3,30 @@ import ConfirmedCart from '../models/confirmedCartModel.js';
 import Product from '../models/productModel.js';
 import QolbaqModel from '../models/qolbaqModel.js';
 
-cron.schedule('*/1 * * * *', async () => {
+const cronproduct = cron.schedule('*/1 * * * *', async () => {
   console.log('Cron job çalıştı ve sepetleri kontrol ediyor...');
-  const fiveMinutesAgo = new Date();
-  fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+  const oneMinuteAgo = new Date();
+  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 
   try {
-    // 5 dakikadan eski ve 'failed' veya 'paid' olan sepetleri al
     const expiredCarts = await ConfirmedCart.find({
-      confirmedAt: { $lt: fiveMinutesAgo },
-      paymentStatus: { $in: ['failed', 'paid'] },
+      confirmedAt: { $lt: oneMinuteAgo },
+      paymentStatus: { $in: ['failed', 'paid'] }, // sadece failed ve paid olanlar
     });
 
     for (let cart of expiredCarts) {
-      console.log(`Sepet bulundu ve siliniyor: ${cart._id}`);
+      console.log(`Sepet bulundu: ${cart._id} - Durum: ${cart.paymentStatus}`);
 
       for (let item of cart.products) {
         const product = await Product.findById(item.productId);
         if (product) {
-          console.log(`Product modelinde ürün bulundu: ${product.title} (ID: ${item.productId})`);
+          console.log(`Product bulundu: ${product.title} (ID: ${item.productId})`);
 
-          // Sadece 'failed' ise stoka geri ekle
+          // sadece paymentStatus "failed" ise stok geri eklensin
           if (cart.paymentStatus === 'failed') {
             const qolbaqProduct = await QolbaqModel.findById(product.productId);
             if (qolbaqProduct) {
-              console.log(`QolbaqModel'de stok güncelleniyor: ${qolbaqProduct.title}`);
+              console.log(`Stok geri ekleniyor: ${qolbaqProduct.title}`);
               qolbaqProduct.stock += item.quantity;
               await qolbaqProduct.save();
             } else {
@@ -35,21 +34,25 @@ cron.schedule('*/1 * * * *', async () => {
             }
           }
 
-          // Product modelinden ürünü sil
+          // Ürün her durumda silinsin
           await Product.findByIdAndDelete(item.productId);
-          console.log(`Product modelinden ürün silindi: ${item.productId}`);
+          console.log(`Product silindi: ${item.productId}`);
         } else {
-          console.log(`Product modelinde ürün bulunamadı: ${item.productId}`);
+          console.log(`Product bulunamadı: ${item.productId}`);
         }
       }
 
-      // Sepet silinir
-      await ConfirmedCart.findByIdAndDelete(cart._id);
-      console.log(`Sepet silindi: ${cart._id}`);
+      // sadece "failed" olan sepetler tamamen silinsin
+      if (cart.paymentStatus === 'failed') {
+        await ConfirmedCart.findByIdAndDelete(cart._id);
+        console.log(`Sepet silindi: ${cart._id}`);
+      } else {
+        console.log(`Sepet "paid" durumunda, silinmedi: ${cart._id}`);
+      }
     }
   } catch (error) {
     console.error('Cron job sırasında hata:', error.message);
   }
 });
 
-export default cron;
+export default cronproduct;
