@@ -17,7 +17,8 @@ const confirmedCartSchema = new mongoose.Schema({
       , totalPrice: {
         type: Number,
       },
-      thumbnail: { type: String },
+
+      title: { type: String },
       previousStock: { type: Number, required: true }, // Önceki stok miktarı
     }
   ],
