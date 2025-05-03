@@ -18,7 +18,9 @@ const confirmedCartSchema = new mongoose.Schema({
         type: Number,
       },
 
-      title: { type: String },
+      title: {
+        type: String,
+      },
     }
   ],
   confirmedAt: { type: Date, default: Date.now },
