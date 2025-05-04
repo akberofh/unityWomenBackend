@@ -285,9 +285,19 @@ const updateUserProfile = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 500;
+
   try {
-    const allUsers = await User.find();
-    res.json({ allUsers });
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments();
+    const allUsers = await User.find().skip(skip).limit(limit);
+
+    res.json({
+      allUsers,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
