@@ -48,3 +48,16 @@ export const getMyTeamSalariess = async (req, res) => {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 };
+
+export const getUserProduct = async (req, res) => {
+  try {
+    if (req.user) {
+      const userProduct = await ConfirmedCart.find({ user_id: req.user._id }).select('products photo paymentStatus confirmedAt'); 
+      res.status(200).json(userProduct);
+    } else {
+      res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
