@@ -123,14 +123,14 @@ export const getAllUsersSalary = async (req, res) => {
         else if (ratio >= 0.90) splitFactor = 2.5;
         else if (ratio >= 0.80) splitFactor = 2;
 
-        if (total >= 12000) salaryRate = 0.105;
-        else if (total >= 8000) salaryRate = 0.10;
-        else if (total >= 6000) salaryRate = 0.09;
-        else if (total >= 4000) salaryRate = 0.085;
-        else if (total >= 1000) salaryRate = 0.078;
-        else if (total >= 500) salaryRate = 0.073;
-        else if (total >= 250) salaryRate = 0.071;
-        else if (total >= 60) salaryRate = 0.068;
+        if (total >= 12000) salaryRate = 0.10;
+        else if (total >= 8000) salaryRate = 0.094;
+        else if (total >= 6000) salaryRate = 0.086;
+        else if (total >= 4000) salaryRate = 0.083;
+        else if (total >= 1000) salaryRate = 0.075;
+        else if (total >= 500) salaryRate = 0.07;
+        else if (total >= 250) salaryRate = 0.07;
+        else if (total >= 60) salaryRate = 0.067;
 
         if (total >= 13000) rank = "Qizil Direktor";
         else if (total >= 10000) rank = "Bas Direktor";
