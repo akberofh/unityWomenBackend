@@ -447,38 +447,38 @@ const getReferralStats = async (req, res) => {
   try {
     const { referralCode } = req.params;
 
-    // Find the user with the given referral code
     const user = await User.findOne({ referralCode });
-
     if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
 
     if (!user.payment) {
       return res.status(404).json({ message: "Ödəniş edilməyib. Mükafat hesablana bilməz." });
     }
 
-    // Get system settings and start date
     const systemSettings = await SystemSettings.findOne();
     const systemStart = new Date(systemSettings.referralSystemStartDate);
     const now = new Date();
 
+    // Tarih aralığını belirle
+    const excludedStart = new Date("2025-04-01T00:00:00Z");
+    const excludedEnd = new Date("2025-04-30T23:59:59Z");
+
+    // Davet edilen tüm kullanıcıları çek
     const invitedUser = await User.find({ referralLinkOwner: referralCode });
 
-
-    // Get all invited users with payment=true
-    const invitedUsers = await User.find({ referralLinkOwner: referralCode, payment: true });
-
-    // Calculate total earned from invited users
-    const totalEarned = invitedUsers.length * 2;
-
-    // Generate 15-day periods starting from system start date to now
-    const periods = generatePeriods(systemStart, now);
-    console.log("Generated Periods:",);
-    periods.forEach(p => {
-      console.log(`${p.start.toISOString()} - ${p.end.toISOString()}`);
+    // Sadece ödeme yapmış ve excluded aralığında oluşturulmamış olanları dahil et
+    const invitedUsers = await User.find({
+      referralLinkOwner: referralCode,
+      payment: true,
+      $or: [
+        { createdAt: { $lt: excludedStart } },
+        { createdAt: { $gt: excludedEnd } }
+      ]
     });
 
+    const totalEarned = invitedUsers.length * 2;
 
-    // Calculate earnings for each 15-day period
+    const periods = generatePeriods(systemStart, now);
+
     const periodEarnings = periods.map(period => {
       const usersInPeriod = invitedUsers.filter(u =>
         u.dailyEarningsDate >= period.start && u.dailyEarningsDate <= period.end
@@ -491,7 +491,6 @@ const getReferralStats = async (req, res) => {
       };
     });
 
-    // Return the stats
     res.json({
       referrerName: user.name,
       referrerEmail: user.email,
@@ -513,6 +512,7 @@ const getReferralStats = async (req, res) => {
     res.status(500).json({ message: "Sunucu hatası" });
   }
 };
+
 
 
 
