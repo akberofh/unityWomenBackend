@@ -13,6 +13,7 @@ import {
   createSystemSettings,
   getReferralStats,
   getUserSalary,
+  getUserById,
 } from '../controllers/userController.js';
 import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
@@ -21,6 +22,10 @@ import bcrypt from 'bcryptjs';
 
 
 const router = express.Router();
+
+
+router.get('/byId/:user_id', getUserById);
+
 
 router.put('/update/:id', userControlAuth, adminControlAuth,  upload.single('photo'), uploadToCloudinary, async (req, res) => {
   try {

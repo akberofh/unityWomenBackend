@@ -2,7 +2,6 @@ import ConfirmedCart from "../models/confirmedCartModel.js";
 import Product from "../models/productModel.js";
 import QolbaqModel from "../models/qolbaqModel.js";
 import mongoose from "mongoose";
-import User from "../models/userModel.js";
 
 
 const addUserProduct = async (req, res) => {
@@ -122,12 +121,6 @@ const confirmCart = async (req, res) => {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
-    // Kullanıcı bilgilerini al
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: 'Kullanıcı bilgileri bulunamadı' });
-    }
-
     // Kullanıcının sepetindeki ürünleri al
     const cartItems = await Product.find({ user_id: req.user._id });
 
@@ -153,8 +146,6 @@ const confirmCart = async (req, res) => {
           productId: item._id,
           quantity: item.quantity,
           photo: item.photo,
-          name: user.name,
-          email: user.email,
           totalPrice: item.totalPrice,
           title: item.title,
           paymentStatus: 'pending',

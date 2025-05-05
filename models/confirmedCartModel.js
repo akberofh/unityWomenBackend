@@ -7,14 +7,7 @@ const confirmedCartSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  name: {
-    type: String, // Kullanıcı adı
-    required: true
-},
-email: {
-    type: String, // Kullanıcı e-posta
-    required: true
-},
+  
   products: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },

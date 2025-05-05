@@ -284,6 +284,19 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+export const getUserById = async (req, res) => {
+  try {
+      const user = await User.findById(req.params.user_id);
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getUser = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 500;
