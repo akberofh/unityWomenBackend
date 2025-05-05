@@ -15,6 +15,8 @@ import paymentRoutes from './routes/paymentRoute.js'
 import HesablamaRouter from './routes/hesabatRouter.js'
 import QazancRouter from './routes/qazancRouter.js'
 import HistoryRouter from './routes/historyRoute.js'
+import KartRouter from './routes/kartRouter.js'
+
 
 
 dotenv.config();
@@ -65,6 +67,8 @@ app.use('/api/product', productRoutes);
 app.use('/api', HesablamaRouter);
 app.use('/api', QazancRouter);
 app.use('/api', HistoryRouter);
+app.use('/api', KartRouter);
+
 
 app.get("/", (req, res) => {
   res.json({
