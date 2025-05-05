@@ -62,3 +62,13 @@ export const getUserProduct = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getConfirmcard = async (req, res) => {
+  try {
+      const alConfirmcard = await ConfirmedCart.find();
+      res.json({ alConfirmcard });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+};

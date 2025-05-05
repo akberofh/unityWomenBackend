@@ -146,6 +146,8 @@ const confirmCart = async (req, res) => {
           productId: item._id,
           quantity: item.quantity,
           photo: item.photo,
+          name: item.name,
+          email: item.email,
           totalPrice: item.totalPrice,
           title: item.title,
           paymentStatus: 'pending',
