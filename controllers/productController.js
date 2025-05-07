@@ -168,8 +168,11 @@ const confirmCart = async (req, res) => {
 
     await newConfirmedCart.save();
 
-    res.json({ message: 'Sepet başarıyla onaylandı ve stoklar güncellendi' });
-  } catch (error) {
+    res.json({ 
+      message: 'Sepet başarıyla onaylandı ve stoklar güncellendi',
+      confirmedCartId: newConfirmedCart._id
+    });
+    } catch (error) {
     res.status(500).json({ error: 'Sunucu hatası', details: error.message });
   }
 };

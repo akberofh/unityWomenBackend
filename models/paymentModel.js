@@ -6,6 +6,10 @@ const paymentModel = mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  confirmedCartId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ConfirmedCart',
+  },
 
   title: {
     type: String,
@@ -14,7 +18,7 @@ const paymentModel = mongoose.Schema({
     type: String,
   },
   photo: {
-    type: [String], // Array of photo paths
+    type: [String], 
   }
 , 
   name: {
