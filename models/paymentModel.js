@@ -8,8 +8,9 @@ const paymentModel = mongoose.Schema({
     type: String,
   },
   photo: {
-    type: String, 
-  },
+    type: [String], // Array of photo paths
+  }
+, 
   name: {
     type: String,
   },
@@ -29,6 +30,9 @@ const paymentModel = mongoose.Schema({
     type: String,
   },
   email: {
+    type: String,
+  },
+  poct: {
     type: String,
   },
   phone: {
