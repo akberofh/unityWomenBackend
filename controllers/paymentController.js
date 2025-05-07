@@ -1,17 +1,22 @@
 import PaymentModel from "../models/paymentModel.js";
 
 const qolbaqAdd = async (req, res) => {
+  
+  if (!req.user) {
+    return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+  }
+
   const {  title , description ,name,  adress, city, delivery, poct, surname, email, phone} = req.body;
-  let photo = ''; // Cloudinary'den alınacak fotoğraf URL'si
+  let photo = ''; 
   if (req.file) {
-    photo = req.fileUrl; // Cloudinary'den alınan URL
+    photo = req.fileUrl; 
   }
 
   try {
 
   
-    // Yeni pubg postu oluştur ve fotoğrafı ekle
     const payment = await PaymentModel.create({
+      user_id: req.user._id,
         title , description ,name,  adress, city, delivery, poct, surname, email, phone,
       photo,
     });

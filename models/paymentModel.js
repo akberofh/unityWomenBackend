@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 
 const paymentModel = mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+
   title: {
     type: String,
   },
