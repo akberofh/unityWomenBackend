@@ -15,13 +15,9 @@ router.get('/adConfirmed', userControlAuth, adminControlAuth , getConfirmcard)
 
 router.put('/update/:id', userControlAuth, adminControlAuth,  async (req, res) => {
   try {
-    const { paymentStatus} = req.body;
+    const { paymentStatus ,gathered } = req.body;
 
-    let updatedData = { paymentStatus};
-
-
-
-    // Kullanıcıyı güncelle
+    let updatedData = { paymentStatus , gathered};
     const updatedUser = await ConfirmedCart.findByIdAndUpdate(
       req.params.id,
       updatedData,

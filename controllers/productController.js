@@ -145,6 +145,7 @@ const confirmCart = async (req, res) => {
         confirmedProducts.push({
           productId: item._id,
           quantity: item.quantity,
+          gathered: item.gathered,
           photo: item.photo,
           totalPrice: item.totalPrice,
           title: item.title,
