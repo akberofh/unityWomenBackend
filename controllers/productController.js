@@ -121,59 +121,61 @@ const confirmCart = async (req, res) => {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }
 
-    // Kullanıcının sepetindeki ürünleri al
-    const cartItems = await Product.find({ user_id: req.user._id });
+    const { products } = req.body;
 
-    if (cartItems.length === 0) {
-      return res.status(400).json({ message: 'Sepet boş' });
+    if (!products || products.length === 0) {
+      return res.status(400).json({ message: 'Sepet boş veya ürün seçilmedi' });
     }
 
-    // Tüm ürünleri toplu olarak onaylayıp stoğu güncelle
     const confirmedProducts = [];
-    for (const item of cartItems) {
+
+    for (const item of products) {
       const product = await QolbaqModel.findById(item.productId);
 
-      if (product) {
-        if (product.stock < item.quantity) {
-          return res.status(400).json({ error: `${product.title} ürünü için yeterli stok yok` });
-        }
+      if (!product) {
+        return res.status(404).json({ error: `Ürün bulunamadı: ${item.title}` });
+      }
 
-        // Stok güncellemesi ve onaylanan ürün bilgilerini ekleme
-        product.stock -= item.quantity;
-        await product.save();
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ error: `${item.title} ürünü için yeterli stok yok` });
+      }
 
-        confirmedProducts.push({
-          productId: item._id,
-          quantity: item.quantity,
-          gathered: item.gathered,
-          photo: item.photo,
-          totalPrice: item.totalPrice,
-          title: item.title,
-          paymentStatus: 'pending',
-        });
+      // Stok güncelle
+      product.stock -= item.quantity;
+      await product.save();
 
-        // Sepet verisini güncelle
-        item.stock -= item.quantity;
-        await item.save();
-      } else {
-        return res.status(404).json({ error: `Ürün bulunamadı: ${item.productId}` });
+      confirmedProducts.push({
+        productId: item._id,
+        quantity: item.quantity,
+        photo: item.photo,
+        gathered: item.gathered,
+        totalPrice: item.totalPrice,
+        title: item.title,
+        paymentStatus: 'pending',
+        previousStock: product.stock + item.quantity
+      });
+
+      // Sepetteki item'ı da güncelle (istersen)
+      const cartItem = await Product.findById(item._id);
+      if (cartItem) {
+        cartItem.stock -= item.quantity;
+        await cartItem.save();
       }
     }
 
-    // Tüm onaylanan ürünleri ConfirmedCart'a kaydet
     const newConfirmedCart = new ConfirmedCart({
       user_id: req.user._id,
       products: confirmedProducts,
-      paymentStatus: 'pending', // Ödeme durumu başlangıçta 'pending'
+      paymentStatus: 'pending',
     });
 
     await newConfirmedCart.save();
 
-    res.json({ 
+    res.json({
       message: 'Sepet başarıyla onaylandı ve stoklar güncellendi',
       confirmedCartId: newConfirmedCart._id
     });
-    } catch (error) {
+  } catch (error) {
     res.status(500).json({ error: 'Sunucu hatası', details: error.message });
   }
 };
