@@ -1,4 +1,6 @@
 import QolbaqModel from "../models/qolbaqModel.js";
+import Product from "../models/productModel.js";
+
 
 const qolbaqAdd = async (req, res) => {
   const { title, description, thumbnail, price, distance, catagory,stock } = req.body;
@@ -32,19 +34,16 @@ const qolbaqAdd = async (req, res) => {
 
 
 const qolbaqUpdate = async (req, res) => {
-  const { id } = req.params; // Parametrelerden ID'yi al
+  const { id } = req.params;
   try {
-    // Belirtilen ID ile bir Pubg kaydı bul
     const qolbaq = await QolbaqModel.findById(id);
 
     if (!qolbaq) {
       return res.status(404).json({ message: 'qolbaq post not found' });
     }
 
-    // Güncelleme işleminden önce mevcut veriyi kontrol et
     console.log("Önceki Veri: ", qolbaq);
 
-    // Gelen verileri güncelle
     qolbaq.title = req.body.title !== undefined ? req.body.title : qolbaq.title;
     qolbaq.price = req.body.price !== undefined ? req.body.price : qolbaq.price;
     qolbaq.distance = req.body.distance !== undefined ? req.body.distance : qolbaq.distance;
@@ -52,21 +51,30 @@ const qolbaqUpdate = async (req, res) => {
     qolbaq.catagory = req.body.catagory !== undefined ? req.body.catagory : qolbaq.catagory;
     qolbaq.description = req.body.description !== undefined ? req.body.description : qolbaq.description;
 
-    // Eğer bir fotoğraf dosyası mevcutsa, base64 formatında güncelle
     if (req.fileUrls && req.fileUrls.length > 0) {
-      qolbaq.photo = []; 
-      qolbaq.photo.push(...req.fileUrls); 
+      qolbaq.photo = [];
+      qolbaq.photo.push(...req.fileUrls);
     }
 
-    
-
-    // Güncellenmiş dest kaydını kaydet
     const updateQolbaq = await qolbaq.save();
 
-    // Güncellenmeden sonraki veriyi kontrol et
+    // ✅ EĞER Aynı ID ile ProductModel'de de varsa, onu da güncelle
+    const updatedProduct = await Product.findOne({ productId: id }); // ya da eşleşen bir alan
+
+    if (updatedProduct) {
+      updatedProduct.title = qolbaq.title;
+      updatedProduct.price = qolbaq.price;
+      updatedProduct.distance = qolbaq.distance;
+      updatedProduct.stock = qolbaq.stock;
+      updatedProduct.catagory = qolbaq.catagory;
+      updatedProduct.description = qolbaq.description;
+      updatedProduct.photo = qolbaq.photo;
+
+      await updatedProduct.save();
+    }
+
     console.log("Güncellenmiş Veri: ", updateQolbaq);
 
-    // Güncellenmiş veriyi döndür
     res.json({
       _id: updateQolbaq._id,
       title: updateQolbaq.title,
@@ -75,7 +83,7 @@ const qolbaqUpdate = async (req, res) => {
       stock: updateQolbaq.stock,
       description: updateQolbaq.description,
       photo: updateQolbaq.photo,
-      price: updateQolbaq.price, // Fiyatı da yanıt olarak ekleyin
+      price: updateQolbaq.price,
     });
   } catch (error) {
     console.error(error);
