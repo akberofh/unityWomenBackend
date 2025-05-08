@@ -16,6 +16,8 @@ import HesablamaRouter from './routes/hesabatRouter.js'
 import QazancRouter from './routes/qazancRouter.js'
 import HistoryRouter from './routes/historyRoute.js'
 import KartRouter from './routes/kartRouter.js'
+import KargoRouter from './routes/kargoRouter.js'
+
 
 
 
@@ -68,6 +70,8 @@ app.use('/api', HesablamaRouter);
 app.use('/api', QazancRouter);
 app.use('/api', HistoryRouter);
 app.use('/api', KartRouter);
+app.use('/api', KargoRouter);
+
 
 
 app.get("/", (req, res) => {
