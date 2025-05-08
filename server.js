@@ -17,6 +17,8 @@ import QazancRouter from './routes/qazancRouter.js'
 import HistoryRouter from './routes/historyRoute.js'
 import KartRouter from './routes/kartRouter.js'
 import KargoRouter from './routes/kargoRouter.js'
+import ManyRouter from './routes/manyRouter.js'
+
 
 
 
@@ -71,6 +73,8 @@ app.use('/api', QazancRouter);
 app.use('/api', HistoryRouter);
 app.use('/api', KartRouter);
 app.use('/api', KargoRouter);
+app.use('/api', ManyRouter);
+
 
 
 
