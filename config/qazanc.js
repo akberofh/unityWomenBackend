@@ -17,7 +17,7 @@ function generatePeriods(startDate, endDate) {
 
   while (currentStart < endDate) {
     const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 14);
+    currentEnd.setDate(currentEnd.getDate() + 6);
     currentEnd.setHours(23, 59, 59, 999);
 
     periods.push({
@@ -25,7 +25,7 @@ function generatePeriods(startDate, endDate) {
       end: new Date(currentEnd > endDate ? endDate : currentEnd)
     });
 
-    currentStart.setDate(currentStart.getDate() + 15);
+    currentStart.setDate(currentStart.getDate() + 7);
     currentStart.setHours(0, 0, 0, 0);
   }
 
@@ -42,6 +42,9 @@ const run = async () => {
     const systemStart = new Date(systemSettings.referralSystemStartDate);
     const now = new Date();
 
+    const excludedStart = new Date("2025-04-01T00:00:00Z");
+    const excludedEnd = new Date("2025-04-30T23:59:59Z");
+
     const allPaidUsers = await User.find({ payment: true });
 
     for (const user of allPaidUsers) {
@@ -50,7 +53,13 @@ const run = async () => {
       if (!referralCode) continue;
 
       const invitedAll = await User.find({ referralLinkOwner: referralCode });
-      const invitedPaid = invitedAll.filter(u => u.payment === true);
+      const invitedPaid = invitedAll.filter((u) => {
+        const created = new Date(u.createdAt);
+        return u.payment === true && (created < excludedStart || created > excludedEnd);
+      });
+      
+
+   
 
       const totalEarned = invitedPaid.length * 2;
       const periods = generatePeriods(systemStart, now);

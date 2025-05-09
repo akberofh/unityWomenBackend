@@ -413,7 +413,7 @@ function generatePeriods(startDate, endDate) {
     });
 
     // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 15);
+    currentStart.setDate(currentStart.getDate() + 7);
     currentStart.setHours(0, 0, 0, 0);
   }
 
@@ -427,7 +427,7 @@ function generatePeriodss(startDate, endDate) {
 
   while (currentStart < endDate) {
     const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 29); // 15 gün (bugün dahil)
+    currentEnd.setDate(currentEnd.getDate() + 31); // 15 gün (bugün dahil)
     currentEnd.setHours(23, 59, 59, 999);
 
     periods.push({
@@ -436,7 +436,7 @@ function generatePeriodss(startDate, endDate) {
     });
 
     // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 15);
+    currentStart.setDate(currentStart.getDate() + 1);
     currentStart.setHours(0, 0, 0, 0);
   }
 
