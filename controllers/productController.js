@@ -2,6 +2,7 @@ import ConfirmedCart from "../models/confirmedCartModel.js";
 import Product from "../models/productModel.js";
 import QolbaqModel from "../models/qolbaqModel.js";
 import mongoose from "mongoose";
+import User from "../models/userModel.js";
 
 
 const addUserProduct = async (req, res) => {
@@ -22,6 +23,15 @@ const addUserProduct = async (req, res) => {
       return res.status(400).json({ error: 'Stokta ürün kalmadı' });
     }
 
+    // Kullanıcının payment alanını kontrol et
+    const user = await User.findById(req.user._id).select('payment');
+    const isPaidUser = user?.payment === true;
+
+    // İndirim uygulanmış fiyatı hesapla
+    const discountedPrice = isPaidUser
+      ? parseFloat((product.price * 0.9).toFixed(2))
+      : product.price;
+
     // Aynı kullanıcı tarafından daha önce eklenmiş aynı ürün var mı kontrol et
     let existingProduct = await Product.findOne({
       productId: product._id,
@@ -31,7 +41,7 @@ const addUserProduct = async (req, res) => {
     if (existingProduct) {
       // Miktarı artır ve toplam fiyatı güncelle
       existingProduct.quantity += 1;
-      existingProduct.totalPrice = existingProduct.price * existingProduct.quantity;
+      existingProduct.totalPrice = parseFloat((discountedPrice * existingProduct.quantity).toFixed(2));
       await existingProduct.save();
     } else {
       // Yeni ürün ekle
@@ -42,9 +52,10 @@ const addUserProduct = async (req, res) => {
         quantity: 1,
         catagory: product.catagory,
         stock: product.stock,
+        thumbnail: product.thumbnail,
         photo: product.photo,
-        price: product.price,
-        totalPrice: product.price,
+        price: discountedPrice,
+        totalPrice: discountedPrice,
       });
       await cartItem.save();
     }

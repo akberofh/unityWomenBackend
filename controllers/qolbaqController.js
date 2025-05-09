@@ -1,5 +1,6 @@
 import QolbaqModel from "../models/qolbaqModel.js";
 import Product from "../models/productModel.js";
+import User from "../models/userModel.js";
 
 
 const qolbaqAdd = async (req, res) => {
@@ -96,21 +97,36 @@ const getQolbaq = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 100;
-
     const skip = (page - 1) * limit;
 
+    const userId = req.params.userId;
+
+    let isPaidUser = false;
+
+    if (userId) {
+      const user = await User.findById(userId).select('payment');
+      isPaidUser = user?.payment === true;
+    }
+
     const [allQolbaq, totalCount] = await Promise.all([
-      QolbaqModel.find()
-        .sort({ price: 1 })
-        .skip(skip)
-        .limit(limit),
+      QolbaqModel.find().sort({ price: 1 }).skip(skip).limit(limit),
       QolbaqModel.countDocuments()
     ]);
+
+    const modifiedQolbaq = allQolbaq.map(item => {
+      const itemObj = item.toObject();
+      if (isPaidUser) {
+        itemObj.originalPrice = itemObj.price;
+        itemObj.price = parseFloat((itemObj.price * 0.9).toFixed(2));
+        itemObj.discountApplied = true;
+      }
+      return itemObj;
+    });
 
     const totalPages = Math.ceil(totalCount / limit);
 
     res.json({
-      allQolbaq,
+      allQolbaq: modifiedQolbaq,
       currentPage: page,
       totalPages,
       totalCount,

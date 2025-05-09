@@ -6,7 +6,7 @@ import {  adminorAdminsControlAuth, userControlAuth } from '../middleware/authMi
 const router = express.Router()
 
 
-router.get('/', getQolbaq)
+router.get('/:userId', getQolbaq)
 
 router.get('/:catagory', getByCategoryQolbaq)
 
