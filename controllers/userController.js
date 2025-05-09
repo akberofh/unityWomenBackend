@@ -427,7 +427,7 @@ function generatePeriodss(startDate, endDate) {
 
   while (currentStart < endDate) {
     const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 31); // 15 gün (bugün dahil)
+    currentEnd.setDate(currentEnd.getDate() + 30); 
     currentEnd.setHours(23, 59, 59, 999);
 
     periods.push({
@@ -436,7 +436,7 @@ function generatePeriodss(startDate, endDate) {
     });
 
     // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 1);
+    currentStart.setDate(currentStart.getDate() + 31);
     currentStart.setHours(0, 0, 0, 0);
   }
 
