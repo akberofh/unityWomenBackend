@@ -189,25 +189,26 @@ const deleteById = async (req, res) => {
 
 const getByCategoryQolbaq = async (req, res) => {
   const { catagory } = req.params;
-  const { userId } = req.params;
+  const userId = req.params.userId;
 
   try {
     let isPaidUser = false;
 
+    // Eğer userId parametresi varsa, ödeme durumunu kontrol et
     if (userId) {
       const user = await User.findById(userId).select('payment');
-      isPaidUser = user?.payment === true;
-
-      
-      console.log("Kullanıcı payment durumu:", user?.payment); // true gelmeli
+      isPaidUser = user.payment === true;
     }
 
+    // Kategoriye göre ürünleri filtrele
     const filteredQolbaq = await QolbaqModel.find({ catagory });
 
+    // Ürün bulunamazsa 404 döndürülür
     if (filteredQolbaq.length === 0) {
       return res.status(404).json({ error: "Ürün bulunamadı" });
     }
 
+    // Ürünleri indirimli fiyatlarla döndür
     const modifiedQolbaq = filteredQolbaq.map(item => {
       const itemObj = item.toObject();
       if (isPaidUser) {

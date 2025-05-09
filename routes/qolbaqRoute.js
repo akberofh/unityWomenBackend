@@ -6,14 +6,14 @@ import {  adminorAdminsControlAuth, userControlAuth } from '../middleware/authMi
 const router = express.Router()
 
 
-router.get('/:userId', getQolbaq)
+router.get('/:userId?', getQolbaq)
 
-router.get('/:catagory/:userId', getByCategoryQolbaq)
+router.get('/catagory/:catagory/:userId?', getByCategoryQolbaq)
 
 
 router.post('/',  userControlAuth , adminorAdminsControlAuth , upload.array('photo'),uploadToCloudinary,  qolbaqAdd)
 
-router.get('/id/:id/:userId', getByIdQolbaq)
+router.get('/id/:id/:userId?', getByIdQolbaq)
 
 router.delete('/:id', userControlAuth, adminorAdminsControlAuth, deleteById)
 
