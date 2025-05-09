@@ -139,12 +139,32 @@ const getQolbaq = async (req, res) => {
 
 const getByIdQolbaq = async (req, res) => {
   const { id } = req.params;
+  const { userId } = req.params;
+
   try {
+    let isPaidUser = false;
+
+    if (userId) {
+      const user = await User.findById(userId).select('payment');
+      if (user && user.payment === true) {
+        isPaidUser = true;
+      }
+    }
+
     const getById = await QolbaqModel.findById(id);
     if (!getById) {
       return res.status(404).json({ error: "Note not found" });
     }
-    res.json({ getById });
+
+    const item = getById.toObject();
+
+    if (isPaidUser) {
+      item.originalPrice = item.price;
+      item.price = parseFloat((item.price * 0.9).toFixed(2)); // %10 indirim
+      item.discountApplied = true;
+    }
+
+    res.json({ getById: item });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -169,15 +189,39 @@ const deleteById = async (req, res) => {
 
 const getByCategoryQolbaq = async (req, res) => {
   const { catagory } = req.params;
+  const { userId } = req.params;
+
   try {
-      const filteredQolbaq = await QolbaqModel.find({ catagory });
-      if (!filteredQolbaq.length) {
-          return res.status(404).json({ error: "Ürün bulunamadı" });
+    let isPaidUser = false;
+
+    if (userId) {
+      const user = await User.findById(userId).select('payment');
+      isPaidUser = user?.payment === true;
+
+      
+      console.log("Kullanıcı payment durumu:", user?.payment); // true gelmeli
+    }
+
+    const filteredQolbaq = await QolbaqModel.find({ catagory });
+
+    if (filteredQolbaq.length === 0) {
+      return res.status(404).json({ error: "Ürün bulunamadı" });
+    }
+
+    const modifiedQolbaq = filteredQolbaq.map(item => {
+      const itemObj = item.toObject();
+      if (isPaidUser) {
+        itemObj.originalPrice = itemObj.price;
+        itemObj.price = parseFloat((itemObj.price * 0.9).toFixed(2));
+        itemObj.discountApplied = true;
       }
-      res.json({ allQolbaq: filteredQolbaq });
+      return itemObj;
+    });
+
+    return res.json({ allQolbaq: modifiedQolbaq });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error("Qolbaq getirme hatası:", error);
+    return res.status(500).json({ error: "Sunucu hatası" });
   }
 };
 
