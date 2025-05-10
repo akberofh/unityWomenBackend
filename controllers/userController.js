@@ -485,7 +485,7 @@ const getReferralStats = async (req, res) => {
       );
 
       return {
-        periodLabel: `${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()}`,
+        periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
         userCount: usersInPeriod.length,
         earned: usersInPeriod.length * 2
       };
