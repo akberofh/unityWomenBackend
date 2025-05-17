@@ -18,33 +18,38 @@ const addUserProduct = async (req, res) => {
       return res.status(404).json({ error: 'Ürün bulunamadı' });
     }
 
-    // Stok kontrolü
     if (product.stock <= 0) {
       return res.status(400).json({ error: 'Stokta ürün kalmadı' });
     }
 
-    // Kullanıcının payment alanını kontrol et
     const user = await User.findById(req.user._id).select('payment');
     const isPaidUser = user?.payment === true;
 
-    // İndirim uygulanmış fiyatı hesapla
-    const discountedPrice = isPaidUser
-      ? parseFloat((product.price * 0.9).toFixed(2))
-      : product.price;
-
-    // Aynı kullanıcı tarafından daha önce eklenmiş aynı ürün var mı kontrol et
     let existingProduct = await Product.findOne({
       productId: product._id,
       user_id: req.user._id,
     });
 
     if (existingProduct) {
-      // Miktarı artır ve toplam fiyatı güncelle
       existingProduct.quantity += 1;
-      existingProduct.totalPrice = parseFloat((discountedPrice * existingProduct.quantity).toFixed(2));
+
+      // Toplam fiyat = price * quantity
+      let total = product.price * existingProduct.quantity;
+
+      // Sadece totalPrice'ye %10 indirim uygula
+      if (isPaidUser) {
+        total = total * 0.9;
+      }
+
+      existingProduct.totalPrice = parseFloat(total.toFixed(2));
       await existingProduct.save();
     } else {
-      // Yeni ürün ekle
+      let totalPrice = product.price;
+
+      if (isPaidUser) {
+        totalPrice = product.price * 0.9;
+      }
+
       const cartItem = new Product({
         user_id: req.user._id,
         productId: product._id,
@@ -54,9 +59,10 @@ const addUserProduct = async (req, res) => {
         stock: product.stock,
         thumbnail: product.thumbnail,
         photo: product.photo,
-        price: discountedPrice,
-        totalPrice: discountedPrice,
+        price: product.price, // Orijinal fiyat
+        totalPrice: parseFloat(totalPrice.toFixed(2)), // Sadece burada indirim
       });
+
       await cartItem.save();
     }
 
