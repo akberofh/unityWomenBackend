@@ -99,19 +99,34 @@ const getQolbaq = async (req, res) => {
     const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
 
+    const userId = req.params.userId;
 
+    let isPaidUser = false;
+
+    if (userId) {
+      const user = await User.findById(userId).select('payment');
+      isPaidUser = user?.payment === true;
+    }
 
     const [allQolbaq, totalCount] = await Promise.all([
       QolbaqModel.find().sort({ price: 1 }).skip(skip).limit(limit),
       QolbaqModel.countDocuments()
     ]);
 
-
+    const modifiedQolbaq = allQolbaq.map(item => {
+      const itemObj = item.toObject();
+      if (isPaidUser) {
+        itemObj.originalPrice = itemObj.price;
+        itemObj.price = parseFloat((itemObj.price * 0.9).toFixed(2));
+        itemObj.discountApplied = true;
+      }
+      return itemObj;
+    });
 
     const totalPages = Math.ceil(totalCount / limit);
 
     res.json({
-      allQolbaq,
+      allQolbaq: modifiedQolbaq,
       currentPage: page,
       totalPages,
       totalCount,
@@ -124,9 +139,17 @@ const getQolbaq = async (req, res) => {
 
 const getByIdQolbaq = async (req, res) => {
   const { id } = req.params;
+  const { userId } = req.params;
 
   try {
+    let isPaidUser = false;
 
+    if (userId) {
+      const user = await User.findById(userId).select('payment');
+      if (user && user.payment === true) {
+        isPaidUser = true;
+      }
+    }
 
     const getById = await QolbaqModel.findById(id);
     if (!getById) {
@@ -135,7 +158,11 @@ const getByIdQolbaq = async (req, res) => {
 
     const item = getById.toObject();
 
-
+    if (isPaidUser) {
+      item.originalPrice = item.price;
+      item.price = parseFloat((item.price * 0.9).toFixed(2)); // %10 indirim
+      item.discountApplied = true;
+    }
 
     res.json({ getById: item });
   } catch (error) {
@@ -162,9 +189,16 @@ const deleteById = async (req, res) => {
 
 const getByCategoryQolbaq = async (req, res) => {
   const { catagory } = req.params;
+  const userId = req.params.userId;
 
   try {
+    let isPaidUser = false;
 
+    // Eğer userId parametresi varsa, ödeme durumunu kontrol et
+    if (userId) {
+      const user = await User.findById(userId).select('payment');
+      isPaidUser = user.payment === true;
+    }
 
     // Kategoriye göre ürünleri filtrele
     const filteredQolbaq = await QolbaqModel.find({ catagory });
@@ -174,9 +208,18 @@ const getByCategoryQolbaq = async (req, res) => {
       return res.status(404).json({ error: "Ürün bulunamadı" });
     }
 
- 
+    // Ürünleri indirimli fiyatlarla döndür
+    const modifiedQolbaq = filteredQolbaq.map(item => {
+      const itemObj = item.toObject();
+      if (isPaidUser) {
+        itemObj.originalPrice = itemObj.price;
+        itemObj.price = parseFloat((itemObj.price * 0.9).toFixed(2));
+        itemObj.discountApplied = true;
+      }
+      return itemObj;
+    });
 
-    return res.json({ allQolbaq:filteredQolbaq });
+    return res.json({ allQolbaq: modifiedQolbaq });
   } catch (error) {
     console.error("Qolbaq getirme hatası:", error);
     return res.status(500).json({ error: "Sunucu hatası" });
