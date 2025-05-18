@@ -160,7 +160,7 @@ const confirmCart = async (req, res) => {
         quantity: item.quantity,
         photo: item.photo,
         gathered: item.gathered,
-        totalPrice: item.totalPrice,
+        price: item.price,
         title: item.title,
         paymentStatus: 'pending',
         previousStock: product.stock + item.quantity
