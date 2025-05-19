@@ -56,6 +56,8 @@ const addUserProduct = async (req, res) => {
         photo: product.photo,
         price: discountedPrice,
         totalPrice: discountedPrice,
+                orginalPrice: product.price,
+
       });
       await cartItem.save();
     }
