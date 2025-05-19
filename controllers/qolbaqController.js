@@ -99,14 +99,10 @@ const getQolbaq = async (req, res) => {
     const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
 
-    
-
     const [allQolbaq, totalCount] = await Promise.all([
-      QolbaqModel.find().sort({ price: 1 }).skip(skip).limit(limit),
+      QolbaqModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit), // köhnədən yeniyə (-1)
       QolbaqModel.countDocuments()
     ]);
-
-
 
     const totalPages = Math.ceil(totalCount / limit);
 
@@ -121,6 +117,7 @@ const getQolbaq = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const getByIdQolbaq = async (req, res) => {
   const { id } = req.params;
