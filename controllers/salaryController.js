@@ -53,7 +53,7 @@ export const getMyTeamSalariess = async (req, res) => {
 export const getUserProduct = async (req, res) => {
   try {
     if (req.user) {
-      const userProduct = await ConfirmedCart.find({ user_id: req.user._id }).select('products photo paymentStatus gathered confirmedAt'); 
+      const userProduct = await ConfirmedCart.find({ user_id: req.user._id }).select('products photo paymentStatus gathered confirmedAt user_id orderCode'); 
       res.status(200).json(userProduct);
     } else {
       res.status(404).json({ message: 'Kullanıcı bulunamadı' });
@@ -65,7 +65,7 @@ export const getUserProduct = async (req, res) => {
 
 export const getConfirmcard = async (req, res) => {
   try {
-      const alConfirmcard = await ConfirmedCart.find().select('products photo paymentStatus gathered confirmedAt user_id');
+      const alConfirmcard = await ConfirmedCart.find().select('products photo paymentStatus gathered confirmedAt user_id orderCode');
       res.json({ alConfirmcard });
   } catch (error) {
       console.error(error);
