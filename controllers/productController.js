@@ -128,6 +128,10 @@ const deleteUserProduct = async (req, res) => {
   }
 };
 
+const generateOrderCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6 rəqəmli sayı
+};
+
 const confirmCart = async (req, res) => {
   try {
     if (!req.user) {
@@ -153,7 +157,6 @@ const confirmCart = async (req, res) => {
         return res.status(400).json({ error: `${item.title} ürünü için yeterli stok yok` });
       }
 
-      // Stok güncelle
       product.stock -= item.quantity;
       await product.save();
 
@@ -168,7 +171,6 @@ const confirmCart = async (req, res) => {
         previousStock: product.stock + item.quantity
       });
 
-      // Sepetteki item'ı da güncelle (istersen)
       const cartItem = await Product.findById(item._id);
       if (cartItem) {
         cartItem.stock -= item.quantity;
@@ -176,22 +178,27 @@ const confirmCart = async (req, res) => {
       }
     }
 
+    const orderCode = generateOrderCode(); // ✅ Sipariş kodu oluşturuluyor
+
     const newConfirmedCart = new ConfirmedCart({
       user_id: req.user._id,
       products: confirmedProducts,
       paymentStatus: 'pending',
+      orderCode: orderCode, // ✅ Order kodu eklendi
     });
 
     await newConfirmedCart.save();
 
     res.json({
       message: 'Sepet başarıyla onaylandı ve stoklar güncellendi',
-      confirmedCartId: newConfirmedCart._id
+      confirmedCartId: newConfirmedCart._id,
+      orderCode: orderCode // ✅ Cevap olarak da gönderiliyor
     });
   } catch (error) {
     res.status(500).json({ error: 'Sunucu hatası', details: error.message });
   }
 };
+
 
 
 

@@ -7,6 +7,11 @@ const confirmedCartSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  orderCode: {
+  type: String,
+  unique: true
+},
+
   
   products: [
     {
