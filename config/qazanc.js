@@ -75,6 +75,7 @@ const run = async () => {
           earned: usersInPeriod.length * 2,
           users: usersInPeriod.map(u => ({
             name: u.name,
+            referralCode: u.referralCode,
             email: u.email,
             photo: u.photo,
             referralCode: u.referralCode
@@ -87,6 +88,7 @@ const run = async () => {
         referrerName: user.name,
         referrerEmail: user.email,
         referrerPhoto: user.photo,
+        referrerReferralCode: user.referralCode,
         count: invitedAll.length,
         totalInvited: invitedPaid.length,
         totalEarned,

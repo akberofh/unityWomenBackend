@@ -10,6 +10,7 @@ const referralStatsSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
   referrerName: String,
   referrerEmail: String,
+  referrerReferralCode: String,
   count: Number, 
   totalInvited: Number,
   totalEarned: Number,

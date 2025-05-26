@@ -174,6 +174,7 @@ export const getAllUsersSalary = async (req, res) => {
           leftTotal: periodLeftTotal,
           rate: salaryRate * 100,
           name: user.name,
+          referralCode: user.referralCode,
           email: user.email,
           photo: user.photo,
           periodStart: period.start,
@@ -184,6 +185,7 @@ export const getAllUsersSalary = async (req, res) => {
       results.push({
         userId: user._id,
         name: user.name,
+        referralCode: user.referralCode,
         email: user.email,
         mode,
         side,
@@ -214,6 +216,7 @@ export const getAllUsersSalary = async (req, res) => {
           leftTotal: p.leftTotal,
           rate: p.rate,
           name: p.name,
+          referralCode: p.referralCode,
           email: p.email,
           photo: p.photo,
           periodStart: p.periodStart,

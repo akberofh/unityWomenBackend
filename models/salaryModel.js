@@ -14,7 +14,7 @@ const salarySchema = new mongoose.Schema({
     rate: Number,
     name: String,
     email: String,
-    
+    referralCode:String,
     photo: String,
     periodStart: Date,     
     periodEnd: Date 
