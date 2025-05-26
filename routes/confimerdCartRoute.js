@@ -31,4 +31,19 @@ router.put('/update/:id', userControlAuth, adminControlAuth,  async (req, res) =
   }
 });
 
+router.delete('/confirmedCard/:id', async (req, res) => {
+    try {
+        const deletedCard = await ConfirmedCart.findByIdAndDelete(req.params.id);
+
+        if (!deletedCard) {
+            return res.status(404).json({ message: 'Kart bulunamadı.' });
+        }
+
+        res.status(200).json({ message: 'Kart başarıyla silindi.', deletedCard });
+    } catch (error) {
+        console.error('Silme hatası:', error);
+        res.status(500).json({ message: 'Sunucu hatası.' });
+    }
+});
+
 export default router;
