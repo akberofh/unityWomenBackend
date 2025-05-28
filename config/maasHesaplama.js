@@ -6,26 +6,31 @@ import mongoose from "mongoose";
 
 function generatePeriods(startDate, endDate) {
   const periods = [];
-  let currentStart = new Date(startDate);
-  currentStart.setHours(0, 0, 0, 0);
+  let current = new Date(startDate);
+  current.setDate(1); // Her zaman ayın 1'i ile başla
+  current.setHours(0, 0, 0, 0);
 
-  while (currentStart < endDate) {
-    const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 14); // 15 gün (bugün dahil)
-    currentEnd.setHours(23, 59, 59, 999);
+  while (current <= endDate) {
+    const start = new Date(current);
+
+    // Aynı ayın son günü
+    const end = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+    end.setHours(23, 59, 59, 999);
 
     periods.push({
-      start: new Date(currentStart),
-      end: new Date(currentEnd > endDate ? endDate : currentEnd)
+      start,
+      end: end > endDate ? new Date(endDate) : end,
     });
 
-    // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 15);
-    currentStart.setHours(0, 0, 0, 0);
+    // Bir sonraki ayın 1. gününe geç
+    current.setMonth(current.getMonth() + 1);
+    current.setDate(1);
+    current.setHours(0, 0, 0, 0);
   }
 
   return periods;
 }
+
 
 mongoose.connect('mongodb+srv://pasomap598:cWBMlcnEj5xiGLTw@akberof.ku4tf.mongodb.net', {
   useNewUrlParser: true,
@@ -176,6 +181,7 @@ export const getAllUsersSalary = async (req, res) => {
           name: user.name,
           referralCode: user.referralCode,
           email: user.email,
+          referralChain: user.referralChain,
           photo: user.photo,
           periodStart: period.start,
           periodEnd: period.end
@@ -187,6 +193,7 @@ export const getAllUsersSalary = async (req, res) => {
         name: user.name,
         referralCode: user.referralCode,
         email: user.email,
+        referralChain: user.referralChain,
         mode,
         side,
         total: mode === "Single Side" ? oneSideTotal : total,
@@ -216,6 +223,7 @@ export const getAllUsersSalary = async (req, res) => {
           leftTotal: p.leftTotal,
           rate: p.rate,
           name: p.name,
+          referralChain: p.referralChain,
           referralCode: p.referralCode,
           email: p.email,
           photo: p.photo,

@@ -77,6 +77,7 @@ const run = async () => {
             name: u.name,
             referralCode: u.referralCode,
             email: u.email,
+            referralChain: u.referralChain,
             photo: u.photo,
             referralCode: u.referralCode
           }))
@@ -87,6 +88,7 @@ const run = async () => {
         userId: user._id,
         referrerName: user.name,
         referrerEmail: user.email,
+        referralChain: user.referralChain,
         referrerPhoto: user.photo,
         referrerReferralCode: user.referralCode,
         count: invitedAll.length,

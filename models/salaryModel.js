@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const salarySchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   totalEarnings: { type: Number },
-  salary: { type: Number},
+  salary: { type: Number },
   rank: { type: String },
-  salaryRate: { type: Number},
+  salaryRate: { type: Number },
   periodSalaries: [{
     periodLabel: String,
     salary: Number,
@@ -14,10 +14,13 @@ const salarySchema = new mongoose.Schema({
     rate: Number,
     name: String,
     email: String,
-    referralCode:String,
+    referralChain: {
+      type: [String],
+      default: [],
+    }, referralCode: String,
     photo: String,
-    periodStart: Date,     
-    periodEnd: Date 
+    periodStart: Date,
+    periodEnd: Date
   }],
   calculatedAt: { type: Date, default: Date.now }
 });

@@ -29,10 +29,10 @@ router.get('/byId/:user_id', getUserById);
 
 router.put('/update/:id', userControlAuth, adminControlAuth,  upload.single('photo'), uploadToCloudinary, async (req, res) => {
   try {
-    const { name, email, payment, password,referralLinkOwner,isVerified } = req.body;
+    const { name, email, payment, password,referralLinkOwner,isVerified ,phone ,faze , gender , card , referredBy} = req.body;
 
     // Güncellenecek veriler
-    let updatedData = { name, email, payment,referralLinkOwner,isVerified };
+    let updatedData = { name, email, payment,referralLinkOwner,isVerified , phone , faze ,gender , card , referredBy };
 
     // Eğer Cloudinary'den gelen URL varsa, bunu ekle
     if (req.fileUrl) {
