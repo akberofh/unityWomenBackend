@@ -1,5 +1,5 @@
 import express from 'express';
-import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
+import { adminOrAdministratorAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import { getKart, kartAdd } from '../controllers/kartController.js';
 import KartModel from '../models/kartModel.js';
 
@@ -11,9 +11,9 @@ const router = express.Router();
 
 router.get('/kart',  getKart)
 
-router.post('/kartAdd' , userControlAuth , adminControlAuth , kartAdd)
+router.post('/kartAdd' , userControlAuth , adminOrAdministratorAuth , kartAdd)
 
-router.put('/kart/:id', userControlAuth, adminControlAuth,  async (req, res) => {
+router.put('/kart/:id', userControlAuth, adminOrAdministratorAuth,  async (req, res) => {
     try {
       const { kart} = req.body;
   

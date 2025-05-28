@@ -1,5 +1,5 @@
 import express from "express";
-import { adminControlAuth, userControlAuth } from "../middleware/authMiddleware.js";
+import { adminOrAdministratorAuth, userControlAuth } from "../middleware/authMiddleware.js";
 import { deleteById, getKargo, kargoAdd, kargoUpdate } from "../controllers/kargoController.js";
 
 
@@ -7,9 +7,9 @@ import { deleteById, getKargo, kargoAdd, kargoUpdate } from "../controllers/karg
 const router = express.Router();
 
 router.get('/kargo', getKargo)
-router.post('/kargoAdd', userControlAuth, adminControlAuth,  kargoAdd);
-router.put('/kargoId/:id',  userControlAuth , adminControlAuth ,  kargoUpdate);
+router.post('/kargoAdd', userControlAuth, adminOrAdministratorAuth,  kargoAdd);
+router.put('/kargoId/:id',  userControlAuth , adminOrAdministratorAuth ,  kargoUpdate);
 
-router.delete('/:id', userControlAuth, adminControlAuth,  deleteById);
+router.delete('/:id', userControlAuth, adminOrAdministratorAuth,  deleteById);
 
 export default router;

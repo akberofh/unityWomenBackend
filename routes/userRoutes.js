@@ -15,7 +15,7 @@ import {
   getUserSalary,
   getUserById,
 } from '../controllers/userController.js';
-import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
+import { adminControlAuth,adminOrAdministratorAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
@@ -27,37 +27,76 @@ const router = express.Router();
 router.get('/byId/:user_id', getUserById);
 
 
-router.put('/update/:id', userControlAuth, adminControlAuth,  upload.single('photo'), uploadToCloudinary, async (req, res) => {
-  try {
-    const { name, email, payment, password,referralLinkOwner,isVerified ,phone ,faze , gender , card , referredBy} = req.body;
+router.put(
+  '/update/:id',
+  userControlAuth,
+  adminOrAdministratorAuth,
+  upload.single('photo'),
+  uploadToCloudinary,
+  async (req, res) => {
+    try {
+      const {
+        name,
+        email,
+        payment,
+        password,
+        referralLinkOwner,
+        isVerified,
+        phone,
+        faze,
+        gender,
+        card,
+        referredBy
+      } = req.body;
 
-    // Güncellenecek veriler
-    let updatedData = { name, email, payment,referralLinkOwner,isVerified , phone , faze ,gender , card , referredBy };
+      const userRole = req.user.userType; // Gelen kullanıcının rolü
 
-    // Eğer Cloudinary'den gelen URL varsa, bunu ekle
-    if (req.fileUrl) {
-      updatedData.photo = req.fileUrl;
+      let updatedData = {};
+
+      if (userRole === 'admin') {
+        // Admin tüm alanları güncelleyebilir
+        updatedData = {
+          name,
+          email,
+          payment,
+          referralLinkOwner,
+          isVerified,
+          phone,
+          faze,
+          gender,
+          card,
+          referredBy
+        };
+
+        if (req.fileUrl) {
+          updatedData.photo = req.fileUrl;
+        }
+
+        if (password) {
+          const hashedPassword = await bcrypt.hash(password, 10);
+          updatedData.password = hashedPassword;
+        }
+
+      } else if (userRole === 'adminstrator') {
+        // Sadece payment alanını güncelleyebilir
+        updatedData = { payment };
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        req.params.id,
+        updatedData,
+        { new: true }
+      );
+
+      res.json({ success: true, updatedUser });
+
+    } catch (error) {
+      console.error('Güncelleme hatası:', error);
+      res.status(500).json({ success: false, message: 'Sunucu hatası' });
     }
-
-    // Eğer şifre varsa, hash'leyip ekle
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updatedData.password = hashedPassword;
-    }
-
-    // Kullanıcıyı güncelle
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      updatedData,
-      { new: true }
-    );
-
-    res.json({ success: true, updatedUser });
-  } catch (error) {
-    console.error('Güncelleme hatası:', error);
-    res.status(500).json({ success: false, message: 'Sunucu hatası' });
   }
-});
+);
+
 
 router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
+import { adminOrAdministratorAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import { getConfirmcard, getUserProduct } from '../controllers/salaryController.js';
 import ConfirmedCart from '../models/confirmedCartModel.js';
 
@@ -11,9 +11,9 @@ router.get('/confirmed', userControlAuth, getUserProduct)
 
 
 
-router.get('/adConfirmed', userControlAuth, adminControlAuth , getConfirmcard)
+router.get('/adConfirmed', userControlAuth, adminOrAdministratorAuth, getConfirmcard)
 
-router.put('/update/:id', userControlAuth, adminControlAuth,  async (req, res) => {
+router.put('/update/:id', userControlAuth, adminOrAdministratorAuth,  async (req, res) => {
   try {
     const { paymentStatus ,gathered } = req.body;
 

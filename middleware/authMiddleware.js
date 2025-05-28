@@ -30,12 +30,12 @@ const adminControlAuth = (req, res, next) => {
   }
 };
 
-
-const adminorAdminsControlAuth = (req, res, next) => {
-  if (req.user && (req.user.userType === 'admin' || req.user.userType === 'adminstrator')) {
-    next(); 
+const adminOrAdministratorAuth = (req, res, next) => {
+  const role = req.user?.userType;
+  if (role === 'admin' || role === 'adminstrator') {
+    return next(); 
   } else {
-    res.status(403).json({ message: 'Forbidden - Admin access required' });
+    return res.status(403).json({ message: 'Forbidden - Only admin or administrator allowed' });
   }
 };
 
@@ -45,4 +45,7 @@ const adminorAdminsControlAuth = (req, res, next) => {
 
 
 
-export { userControlAuth, adminControlAuth  ,adminorAdminsControlAuth};
+
+
+
+export { userControlAuth, adminControlAuth  ,adminOrAdministratorAuth};
