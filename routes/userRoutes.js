@@ -144,6 +144,22 @@ router.post("/system-settings", userControlAuth, adminControlAuth, createSystemS
 
 router.post('/logout', logoutUser);
 
+  router.get('/refCode/:referralCode', async (req, res) => {
+    try {
+      const referralCode = req.params.referralCode;
+  
+      if (!referralCode) {
+        return res.status(400).json({ message: 'Referral code is required' });
+      }
+  
+      const referredUsers = await User.find({ referralLinkOwner: referralCode });
+  
+      res.json({ referredUsers });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  });
+
 router.get('/getuser/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
