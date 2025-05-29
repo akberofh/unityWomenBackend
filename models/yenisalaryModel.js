@@ -4,8 +4,6 @@ const yenisalarySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   totalEarnings: { type: Number },
   salary: { type: Number },
-  rightTotal: { type: Number },
-  leftTotal: { type: Number },
   rank: { type: String },
   salaryRate: { type: Number },
   periodSalaries: [{
@@ -13,11 +11,14 @@ const yenisalarySchema = new mongoose.Schema({
     salary: Number,
     rank: String,
     total: Number,
-    rightTotal: Number,
-    leftTotal: Number,
     rate: Number,
     name: String,
     email: String,
+    referralChain: {
+      type: [String],
+      default: [],
+    },
+    referralCode: String,
     photo: String,
     periodStart: Date,
     periodEnd: Date

@@ -6,26 +6,31 @@ import mongoose from "mongoose";
 
 function generatePeriods(startDate, endDate) {
   const periods = [];
-  let currentStart = new Date(startDate);
-  currentStart.setHours(0, 0, 0, 0);
+  let current = new Date(startDate);
+  current.setDate(1); // Her zaman ayın 1'i ile başla
+  current.setHours(0, 0, 0, 0);
 
-  while (currentStart < endDate) {
-    const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 14); // 15 gün (bugün dahil)
-    currentEnd.setHours(23, 59, 59, 999);
+  while (current <= endDate) {
+    const start = new Date(current);
+
+    // Aynı ayın son günü
+    const end = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+    end.setHours(23, 59, 59, 999);
 
     periods.push({
-      start: new Date(currentStart),
-      end: new Date(currentEnd > endDate ? endDate : currentEnd)
+      start,
+      end: end > endDate ? new Date(endDate) : end,
     });
 
-    // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 15);
-    currentStart.setHours(0, 0, 0, 0);
+    // Bir sonraki ayın 1. gününe geç
+    current.setMonth(current.getMonth() + 1);
+    current.setDate(1);
+    current.setHours(0, 0, 0, 0);
   }
 
   return periods;
 }
+
 
 mongoose.connect('mongodb+srv://pasomap598:cWBMlcnEj5xiGLTw@akberof.ku4tf.mongodb.net', {
   useNewUrlParser: true,
@@ -122,14 +127,14 @@ export const getAllUsersSalary = async (req, res) => {
         else if (ratio >= 0.90) splitFactor = 2.5;
         else if (ratio >= 0.80) splitFactor = 2;
 
-        if (total >= 12000) salaryRate = 0.105;
-        else if (total >= 8000) salaryRate = 0.10;
-        else if (total >= 6000) salaryRate = 0.09;
-        else if (total >= 4000) salaryRate = 0.085;
-        else if (total >= 1000) salaryRate = 0.078;
-        else if (total >= 500) salaryRate = 0.073;
-        else if (total >= 250) salaryRate = 0.071;
-        else if (total >= 60) salaryRate = 0.068;
+        if (total >= 12000) salaryRate = 0.10;
+        else if (total >= 8000) salaryRate = 0.094;
+        else if (total >= 6000) salaryRate = 0.086;
+        else if (total >= 4000) salaryRate = 0.083;
+        else if (total >= 1000) salaryRate = 0.075;
+        else if (total >= 500) salaryRate = 0.07;
+        else if (total >= 250) salaryRate = 0.07;
+        else if (total >= 60) salaryRate = 0.067;
 
         if (total >= 13000) rank = "Qizil Direktor";
         else if (total >= 10000) rank = "Bas Direktor";
@@ -173,7 +178,9 @@ export const getAllUsersSalary = async (req, res) => {
           leftTotal: periodLeftTotal,
           rate: salaryRate * 100,
           name: user.name,
+          referralCode: user.referralCode,
           email: user.email,
+          referralChain: user.referralChain,
           photo: user.photo,
           periodStart: period.start,
           periodEnd: period.end
@@ -183,7 +190,9 @@ export const getAllUsersSalary = async (req, res) => {
       results.push({
         userId: user._id,
         name: user.name,
+        referralCode: user.referralCode,
         email: user.email,
+        referralChain: user.referralChain,
         mode,
         side,
         total: mode === "Single Side" ? oneSideTotal : total,
@@ -213,6 +222,8 @@ export const getAllUsersSalary = async (req, res) => {
           leftTotal: p.leftTotal,
           rate: p.rate,
           name: p.name,
+          referralChain: p.referralChain,
+          referralCode: p.referralCode,
           email: p.email,
           photo: p.photo,
           periodStart: p.periodStart,

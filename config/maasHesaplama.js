@@ -1,7 +1,6 @@
 import User from '../models/userModel.js';
 import SystemSettings from '../models/systemSettingsModel.js';
 import Salary from '../models/salaryModel.js';
-import mongoose from "mongoose";
 
 
 function generatePeriods(startDate, endDate) {
@@ -32,17 +31,7 @@ function generatePeriods(startDate, endDate) {
 }
 
 
-mongoose.connect('mongodb+srv://pasomap598:cWBMlcnEj5xiGLTw@akberof.ku4tf.mongodb.net', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('MongoDB’ye başarılı bir şekilde bağlanıldı!');
-    getAllUsersSalary();
-  })
-  .catch(err => {
-    console.error('MongoDB bağlantı hatası:', err);
-  });
+
 
 export const getAllUsersSalary = async (req, res) => {
   try {
