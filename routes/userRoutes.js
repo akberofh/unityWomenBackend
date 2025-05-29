@@ -15,8 +15,8 @@ import {
   getUserSalary,
   getUserById,
 } from '../controllers/userController.js';
-import { adminControlAuth,adminOrAdministratorAuth, userControlAuth } from '../middleware/authMiddleware.js';
-import {upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
+import { adminControlAuth, adminOrAdministratorAuth, userControlAuth } from '../middleware/authMiddleware.js';
+import { upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
 
@@ -53,7 +53,7 @@ router.put(
 
       let updatedData = {};
 
-      if (userRole === 'admin') {
+      if (userRole === 'adminstrator') {
         // Admin tüm alanları güncelleyebilir
         updatedData = {
           name,
@@ -77,7 +77,7 @@ router.put(
           updatedData.password = hashedPassword;
         }
 
-      } else if (userRole === 'adminstrator') {
+      } else if (userRole === 'admin') {
         // Sadece payment alanını güncelleyebilir
         updatedData = { payment };
       }
@@ -103,7 +103,7 @@ router.delete('/delete/:id', async (req, res) => {
 
   try {
     const deletedProduct = await User.findByIdAndDelete(id);
-    
+
     if (!deletedProduct) {
       return res.status(404).json({ message: 'Məhsul tapılmadı.' });
     }
@@ -127,10 +127,10 @@ router.get('/referral-stats/:referralCode', getReferralStats);
 router.get("/referredBykod/:referralCode", getReferredBy);
 
 
-router.post('/register', upload.single('photo'),uploadToCloudinary, registerUser);
+router.post('/register', upload.single('photo'), uploadToCloudinary, registerUser);
 
 
-router.post('/auth',   authUser);
+router.post('/auth', authUser);
 
 
 router.get('/admin/:referralCode', getUserByReferralCode);
@@ -144,21 +144,21 @@ router.post("/system-settings", userControlAuth, adminControlAuth, createSystemS
 
 router.post('/logout', logoutUser);
 
-  router.get('/refCode/:referralCode', async (req, res) => {
-    try {
-      const referralCode = req.params.referralCode;
-  
-      if (!referralCode) {
-        return res.status(400).json({ message: 'Referral code is required' });
-      }
-  
-      const referredUsers = await User.find({ referralLinkOwner: referralCode });
-  
-      res.json({ referredUsers });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error', error });
+router.get('/refCode/:referralCode', async (req, res) => {
+  try {
+    const referralCode = req.params.referralCode;
+
+    if (!referralCode) {
+      return res.status(400).json({ message: 'Referral code is required' });
     }
-  });
+
+    const referredUsers = await User.find({ referralLinkOwner: referralCode });
+
+    res.json({ referredUsers });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
 
 router.get('/getuser/:id', async (req, res) => {
   try {
@@ -175,6 +175,6 @@ router.get('/', getUser);
 router
   .route('/profile')
   .get(userControlAuth, getUserProfile)
-  .put(userControlAuth,  upload.single('photo'),uploadToCloudinary, updateUserProfile);
+  .put(userControlAuth, upload.single('photo'), uploadToCloudinary, updateUserProfile);
 
 export default router;
