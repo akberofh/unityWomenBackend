@@ -44,6 +44,7 @@ router.put(
         phone,
         faze,
         gender,
+        card,
         referredBy
       } = req.body;
 
@@ -60,6 +61,7 @@ router.put(
           phone,
           faze,
           gender,
+          card,
           referredBy
         };
 
