@@ -34,18 +34,18 @@ function generatePeriods(startDate, endDate) {
 
 
 export const getAllUsersSalary = async (req, res) => {
-  try {
-    await Salary.deleteMany({});
-
-    const users = await User.find({ payment: true });
-    const systemSettings = await SystemSettings.findOne();
-    const systemStart = new Date(systemSettings.referralSystemStartDate);
-    const now = new Date();
-    const periods = generatePeriods(systemStart, now);
-
-    const results = [];
-
-    for (const user of users) {
+  const results = [];
+  await Salary.deleteMany({});
+  
+  const users = await User.find({ payment: true });
+  const systemSettings = await SystemSettings.findOne();
+  const systemStart = new Date(systemSettings.referralSystemStartDate);
+  const now = new Date();
+  const periods = generatePeriods(systemStart, now);
+  
+  
+  for (const user of users) {
+      try {
       const referralCode = user.referralCode;
       const children = await User.find({ referredBy: referralCode });
       const right = children[0];
@@ -94,7 +94,7 @@ export const getAllUsersSalary = async (req, res) => {
         else if (oneSideTotal >= 200) salaryRate = 0.018;
         else if (oneSideTotal >= 100) salaryRate = 0.03;
 
-        if (oneSideTotal >= 13000 ) rank = "Qizil Direktor";
+        if (oneSideTotal >= 13000) rank = "Qizil Direktor";
         else if (oneSideTotal >= 10000) rank = "Bas Direktor";
         else if (oneSideTotal >= 6001) rank = "Direktor";
         else if (oneSideTotal >= 4000) rank = "Bas Lider";
@@ -195,7 +195,7 @@ export const getAllUsersSalary = async (req, res) => {
         leftTotal
       });
 
-      let a=  await Salary.create({
+      let a = await Salary.create({
         userId: user._id,
         totalEarnings: mode === "Single Side" ? oneSideTotal : total,
         salary: Number(salary),
@@ -222,14 +222,14 @@ export const getAllUsersSalary = async (req, res) => {
       });
 
       console.log(a);
-      
-    }
 
-    return res.json(results);
-  } catch (error) {
-    console.error("Toplu maaş hesaplama hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
-  }
+    }
+catch (err) {
+      console.error(`Hata: ${user.name} için hesaplama yapılamadı.`, err);
+    }
+  } 
+    console.log("İşlem tamamlandı:", results.length);
+
 };
 
 
