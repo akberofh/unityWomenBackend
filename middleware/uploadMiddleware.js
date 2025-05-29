@@ -70,19 +70,7 @@ const uploadToCloudinary = async (req, res, next) => {
   }
 };
 
-const conditionalUpload = (req, res, next) => {
-  const isMultipart = (req.headers['content-type'] || '').includes('multipart/form-data');
-  if (!isMultipart) return next();
-
-  upload.single('photo')(req, res, function (err) {
-    if (err) {
-      console.error('Upload hatası:', err);
-      return res.status(400).json({ message: 'Fotoğraf yüklenemedi' });
-    }
-    next();
-  });
-};
 
 
 
-export { upload, uploadToCloudinary , conditionalUpload };
+export { upload, uploadToCloudinary };

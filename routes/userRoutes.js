@@ -16,7 +16,7 @@ import {
   getUserById,
 } from '../controllers/userController.js';
 import { adminControlAuth, adminOrAdministratorAuth, userControlAuth } from '../middleware/authMiddleware.js';
-import { conditionalUpload, upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
+import {  upload, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
 
@@ -30,7 +30,7 @@ router.put(
   '/update/:id',
   userControlAuth,
   adminOrAdministratorAuth,
- conditionalUpload,
+ upload.single('photo'),
   uploadToCloudinary,
   async (req, res) => {
     try {
