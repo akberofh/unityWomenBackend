@@ -422,22 +422,25 @@ function generatePeriods(startDate, endDate) {
 
 function generatePeriodss(startDate, endDate) {
   const periods = [];
-  let currentStart = new Date(startDate);
-  currentStart.setHours(0, 0, 0, 0);
+  let current = new Date(startDate);
+  current.setDate(1); // Ayın 1'i
 
-  while (currentStart < endDate) {
-    const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 30); 
-    currentEnd.setHours(23, 59, 59, 999);
+  while (current <= endDate) {
+    const start = new Date(current);
+    let end = new Date(current.getFullYear(), current.getMonth() + 1, 0); // Ayın son günü
+
+    // Eğer ayın son günü gelecekteyse, endDate (bugün) ile sınırla
+    if (end > endDate) {
+      end = new Date(endDate);
+    }
 
     periods.push({
-      start: new Date(currentStart),
-      end: new Date(currentEnd > endDate ? endDate : currentEnd)
+      start: new Date(start.setHours(0, 0, 0, 0)),
+      end: new Date(end.setHours(23, 59, 59, 999))
     });
 
-    // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 31);
-    currentStart.setHours(0, 0, 0, 0);
+    // Sonraki ayın 1'ine geç
+    current.setMonth(current.getMonth() + 1);
   }
 
   return periods;
