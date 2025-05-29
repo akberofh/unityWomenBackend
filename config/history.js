@@ -1,6 +1,6 @@
 import User from '../models/userModel.js';
 import SystemSettings from '../models/systemSettingsModel.js';
-import Salary from '../models/yenisalaryModel.js';
+import Salary from '../models/salaryModel.js';
 import mongoose from "mongoose";
 
 
