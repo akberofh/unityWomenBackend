@@ -43,7 +43,7 @@ router.put(
         isVerified,
         phone,
         faze,
-        gender,
+        
         card,
         referredBy
       } = req.body;
@@ -60,7 +60,7 @@ router.put(
           isVerified,
           phone,
           faze,
-          gender,
+          
           card,
           referredBy
         };
