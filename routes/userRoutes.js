@@ -26,7 +26,6 @@ const router = express.Router();
 
 router.get('/byId/:user_id', getUserById);
 
-
 router.put(
   '/update/:id',
   userControlAuth,
@@ -49,12 +48,10 @@ router.put(
         referredBy
       } = req.body;
 
-      const userRole = req.user.userType; // Gelen kullanıcının rolü
-
+      const userRole = req.user.userType;
       let updatedData = {};
 
       if (userRole === 'admin') {
-        // Admin tüm alanları güncelleyebilir
         updatedData = {
           name,
           email,
@@ -68,19 +65,25 @@ router.put(
           referredBy
         };
 
-        if (req.fileUrl) {
+        if (req.file && req.fileUrl) {
           updatedData.photo = req.fileUrl;
         }
 
-        if (password) {
+        if (password && password.trim() !== '') {
           const hashedPassword = await bcrypt.hash(password, 10);
           updatedData.password = hashedPassword;
         }
 
       } else if (userRole === 'adminstrator') {
-        // Sadece payment alanını güncelleyebilir
         updatedData = { payment };
       }
+
+      // Gereksiz boş alanları temizle
+      Object.keys(updatedData).forEach(key => {
+        if (updatedData[key] === undefined || updatedData[key] === '') {
+          delete updatedData[key];
+        }
+      });
 
       const updatedUser = await User.findByIdAndUpdate(
         req.params.id,
