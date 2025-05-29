@@ -423,28 +423,28 @@ function generatePeriods(startDate, endDate) {
 function generatePeriodss(startDate, endDate) {
   const periods = [];
   let current = new Date(startDate);
-  current.setDate(1); // Ayın 1'i
+  current.setDate(1); // Ayın 1-i
 
   while (current <= endDate) {
     const start = new Date(current);
     let end = new Date(current.getFullYear(), current.getMonth() + 1, 0); // Ayın son günü
 
-    // Eğer ayın son günü gelecekteyse, endDate (bugün) ile sınırla
-    if (end > endDate) {
-      end = new Date(endDate);
-    }
+    // Azərbaycan saatına uyğunlaşdır (GMT+4)
+    const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+    const endAz = new Date(end > endDate ? endDate : end);
+    endAz.setHours(23 + 4, 59, 59, 999); // Günün sonu, GMT+4
 
     periods.push({
-      start: new Date(start.setHours(0, 0, 0, 0)),
-      end: new Date(end.setHours(23, 59, 59, 999))
+      start: new Date(startAz.setHours(0 + 4, 0, 0, 0)),
+      end: endAz
     });
 
-    // Sonraki ayın 1'ine geç
     current.setMonth(current.getMonth() + 1);
   }
 
   return periods;
 }
+
 
 const getReferralStats = async (req, res) => {
   try {
