@@ -41,11 +41,7 @@ router.put(
         password,
         referralLinkOwner,
         isVerified,
-        phone,
-        faze,
-        
-        card,
-        referredBy
+       
       } = req.body;
 
       const userRole = req.user.userType;
@@ -58,11 +54,7 @@ router.put(
           payment,
           referralLinkOwner,
           isVerified,
-          phone,
-          faze,
-          
-          card,
-          referredBy
+         
         };
 
         if (req.file && req.fileUrl) {
