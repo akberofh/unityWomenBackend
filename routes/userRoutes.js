@@ -45,7 +45,6 @@ router.put(
         faze,
         gender,
         card,
-        referredBy
       } = req.body;
 
       const userRole = req.user.userType;
@@ -62,7 +61,6 @@ router.put(
           faze,
           gender,
           card,
-          referredBy
         };
 
         if (req.file && req.fileUrl) {
