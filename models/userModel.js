@@ -5,6 +5,7 @@ const userSchema = mongoose.Schema(
   {
     name: {
       type: String,
+      required: true,
     },
     email: {
       type: String,
@@ -12,6 +13,7 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
+      required: true,
     },
     referralLinkOwner: 
     { type: String,
@@ -43,6 +45,7 @@ const userSchema = mongoose.Schema(
     },
     gender: {
       type: String,
+      required: true,
       enum: ['kişi', 'qadın'], 
     },
     referralCode: {
