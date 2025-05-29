@@ -53,7 +53,7 @@ router.put(
 
       let updatedData = {};
 
-      if (userRole === 'adminstrator') {
+      if (userRole === 'admin') {
         // Admin tüm alanları güncelleyebilir
         updatedData = {
           name,
@@ -77,7 +77,7 @@ router.put(
           updatedData.password = hashedPassword;
         }
 
-      } else if (userRole === 'admin') {
+      } else if (userRole === 'adminstrator') {
         // Sadece payment alanını güncelleyebilir
         updatedData = { payment };
       }
