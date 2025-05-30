@@ -20,6 +20,8 @@ import KargoRouter from './routes/kargoRouter.js'
 import ManyRouter from './routes/manyRouter.js'
 import './cornJob/maasHesaplaJob.js';
 import './cornJob/qazancJob.js'
+import './cornJob/historyJob.js'
+import './cornJob/historyQazancJob.js'
 
 
 

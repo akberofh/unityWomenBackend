@@ -33,7 +33,7 @@ function generatePeriods(startDate, endDate) {
 
 
 
-export const getAllUsersSalary = async (req, res) => {
+export const getAllUsersSalary = async () => {
   const results = [];
   await Salary.deleteMany({});
   

@@ -1,7 +1,6 @@
 import User from '../models/userModel.js';
 import SystemSettings from '../models/systemSettingsModel.js';
-import Salary from '../models/salaryModel.js';
-import mongoose from "mongoose";
+import Salary from '../models/yenisalaryModel.js';
 
 
 function generatePeriods(startDate, endDate) {
@@ -32,30 +31,20 @@ function generatePeriods(startDate, endDate) {
 }
 
 
-mongoose.connect('mongodb+srv://pasomap598:cWBMlcnEj5xiGLTw@akberof.ku4tf.mongodb.net', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('MongoDB’ye başarılı bir şekilde bağlanıldı!');
-    getAllUsersSalary();
-  })
-  .catch(err => {
-    console.error('MongoDB bağlantı hatası:', err);
-  });
 
-export const getAllUsersSalary = async (req, res) => {
-  try {
 
-    const users = await User.find({ payment: true });
-    const systemSettings = await SystemSettings.findOne();
-    const systemStart = new Date(systemSettings.referralSystemStartDate);
-    const now = new Date();
-    const periods = generatePeriods(systemStart, now);
-
-    const results = [];
-
-    for (const user of users) {
+export const history = async () => {
+  
+  const users = await User.find({ payment: true });
+  const systemSettings = await SystemSettings.findOne();
+  const systemStart = new Date(systemSettings.referralSystemStartDate);
+  const now = new Date();
+  const periods = generatePeriods(systemStart, now);
+  
+  const results = [];
+  
+  for (const user of users) {
+      try {
       const referralCode = user.referralCode;
       const children = await User.find({ referredBy: referralCode });
       const right = children[0];
@@ -231,15 +220,13 @@ export const getAllUsersSalary = async (req, res) => {
         }))
       });
 
-      console.log(a);
       
+    }catch (err) {
+      console.error(`Hata: ${user.name} için hesaplama yapılamadı.`, err);
     }
 
-    return res.json(results);
-  } catch (error) {
-    console.error("Toplu maaş hesaplama hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
   }
+
 };
 
 

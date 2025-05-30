@@ -3,7 +3,6 @@ import SystemSettings from '../models/systemSettingsModel.js';
 import ReferralStats from '../models/referralStats.js';
 
 
-
 function generatePeriods(startDate, endDate) {
   const periods = [];
   let currentStart = new Date(startDate);
@@ -41,11 +40,11 @@ export const run = async () => {
   const allPaidUsers = await User.find({ payment: true });
   
   for (const user of allPaidUsers) {
-      try {
-      const referralCode = user.referralCode;
-
-      if (!referralCode) continue;
-
+    try {
+    const referralCode = user.referralCode;
+    
+    if (!referralCode) continue;
+    
       const invitedAll = await User.find({ referralLinkOwner: referralCode });
       const invitedPaid = invitedAll.filter((u) => {
         const created = new Date(u.createdAt);
@@ -92,10 +91,14 @@ export const run = async () => {
       });
 
       await statDoc.save();
-    }catch (err) {
+    }
+    catch (err) {
     console.error("Hata:", err);
   } 
 
   } 
+
+    console.log("İşlem tamamlandı:", statDoc.length);
+
 };
 
