@@ -25,7 +25,7 @@ function generatePeriods(startDate, endDate) {
   return periods;
 }
 
-export const historyQazancJob = async () => {
+export const historyQazanc = async () => {
   
   await ReferralStats.deleteMany({});
   
