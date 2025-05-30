@@ -27,7 +27,6 @@ function generatePeriods(startDate, endDate) {
 
 export const historyQazanc = async () => {
   
-  await ReferralStats.deleteMany({});
   
   
   const systemSettings = await SystemSettings.findOne();
