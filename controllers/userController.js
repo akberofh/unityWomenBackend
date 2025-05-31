@@ -446,6 +446,7 @@ const getReferralStats = async (req, res) => {
     const invitedUsers = await User.find({
       referralLinkOwner: referralCode,
       payment: true,
+      isVerified: { $ne: true }
 
     });
 
