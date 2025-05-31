@@ -28,14 +28,14 @@ const authUser = async (req, res) => {
         finCode: user.finCode,
         card: user.card,
         email: user.email,
-        gender : user.gender,
-        faze : user.faze,
-        phone : user.phone,
-        payment : user.payment,
-        userType : user.userType,
+        gender: user.gender,
+        faze: user.faze,
+        phone: user.phone,
+        payment: user.payment,
+        userType: user.userType,
         referralCode: user.referralCode,
         referredBy: user.referredBy,
-        referralLink ,
+        referralLink,
         referralChain: user.referralChain,
         referralLinkOwner: user.referralLinkOwner,
       });
@@ -49,7 +49,7 @@ const authUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, faze, maze , phone , password, referralCode: referredBy, userType, adminKey, gender,card,finCode ,referralLinkOwner} = req.body;
+    const { name, email, faze, maze, phone, password, referralCode: referredBy, userType, adminKey, gender, card, finCode, referralLinkOwner } = req.body;
 
     if (!gender || !['kişi', 'qadın'].includes(gender.toLowerCase())) {
       return res.status(400).json({ message: "Geçerli bir cinsiyet seçimi yapınız (kişi veya qadın)." });
@@ -71,20 +71,20 @@ const registerUser = async (req, res) => {
       if (!referrer) {
         return res.status(400).json({ message: "Geçersiz referral kodu" });
       }
-    
+
       const referredUsersCount = await User.countDocuments({ referredBy });
-    
+
       if (referredUsersCount >= 2) {
         return res.status(400).json({ message: "Bu referral koduyla maksimum 2 kullanıcı kayıt olabilir. Lütfen başka bir referral kodu giriniz." });
       }
-    
+
       referralChain = [...referrer.referralChain, referredBy];
     }
-    
 
-    let photo = ''; 
+
+    let photo = '';
     if (req.file) {
-      photo = req.fileUrl; 
+      photo = req.fileUrl;
     }
 
     const phoneExists = await User.findOne({ phone });
@@ -265,14 +265,14 @@ const updateUserProfile = async (req, res) => {
         finCode: updatedUser.finCode,
         card: updatedUser.card,
         email: updatedUser.email,
-        gender : updatedUser.gender,
-        faze : updatedUser.faze,
-        phone : updatedUser.phone,
-        payment : updatedUser.payment,
-        userType : updatedUser.userType,
+        gender: updatedUser.gender,
+        faze: updatedUser.faze,
+        phone: updatedUser.phone,
+        payment: updatedUser.payment,
+        userType: updatedUser.userType,
         referralCode: updatedUser.referralCode,
         referredBy: updatedUser.referredBy,
-        referralLink:user.referralLink ,
+        referralLink: user.referralLink,
         referralChain: updatedUser.referralChain,
         referralLinkOwner: updatedUser.referralLinkOwner,
       });
@@ -286,14 +286,14 @@ const updateUserProfile = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-      const user = await User.findById(req.params.user_id);
-      if (!user) {
-          return res.status(404).json({ error: "User not found" });
-      }
-      res.json(user);
+    const user = await User.findById(req.params.user_id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(user);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -330,10 +330,10 @@ const getUserByReferralCodee = async (req, res) => {
     }
 
     res.json({
-            count: users.length,
+      count: users.length,
 
-       users 
-      });
+      users
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -420,30 +420,19 @@ function generatePeriods(startDate, endDate) {
   return periods;
 }
 
-function generatePeriodss(startDate, endDate) {
-  const periods = [];
-  let current = new Date(startDate);
-  current.setDate(1); // Ayın 1-i
+function generatePeriodss() {
+  const now = new Date(); // bugünün tarihi
 
-  while (current <= endDate) {
-    const start = new Date(current);
-    let end = new Date(current.getFullYear(), current.getMonth() + 1, 0); // Ayın son günü
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // ayın başı
+  const end = new Date(); // bugün
 
-    // Azərbaycan saatına uyğunlaşdır (GMT+4)
-    const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
-    const endAz = new Date(end > endDate ? endDate : end);
-    endAz.setHours(23 + 4, 59, 59, 999); // Günün sonu, GMT+4
+  const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const endAz = new Date(end.getTime() + 4 * 60 * 60 * 1000);
+  endAz.setHours(23, 59, 59, 999);
 
-    periods.push({
-      start: new Date(startAz.setHours(0 + 4, 0, 0, 0)),
-      end: endAz
-    });
-
-    current.setMonth(current.getMonth() + 1);
-  }
-
-  return periods;
+  return [{ start: startAz, end: endAz }];
 }
+
 
 
 const getReferralStats = async (req, res) => {
@@ -561,11 +550,8 @@ export const getUserSalary = async (req, res) => {
       return res.status(403).json({ message: "Ödəniş edilməyib. Maaş hesablana bilməz." });
     }
 
-    const systemSettings = await SystemSettings.findOne();
-    const systemStart = new Date(systemSettings.referralSystemStartDate);
-    const now = new Date();
-    const periods = generatePeriodss(systemStart, now);
 
+    const periods = generatePeriodss();
     const referral = user.referralCode;
     const children = await User.find({ referredBy: referral });
     const right = children[0];
@@ -731,7 +717,7 @@ export const getUserSalary = async (req, res) => {
 
 
 export {
-  
+
   getUserByReferralCode,
   getUserByReferralCodee,
   authUser,
