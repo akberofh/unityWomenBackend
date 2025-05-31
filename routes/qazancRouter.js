@@ -3,6 +3,7 @@ import referralStats from '../models/referralStats.js';
 import referralStates from '../models/yeniQazancModel.js';
 import { adminControlAuth, userControlAuth } from '../middleware/authMiddleware.js';
 import { getMyTeamReferralstats } from '../controllers/referralStatsController.js';
+import { getMyTeamSalar } from '../controllers/salaryController.js';
 
 const router = express.Router();
 
@@ -28,6 +29,9 @@ router.get('/Historyqazanc',   async (req, res) => {
 
 
 router.get('/mane', userControlAuth, getMyTeamReferralstats);
+
+
+router.get('/historyQOne', userControlAuth, getMyTeamSalar);
 
 
 export default router;

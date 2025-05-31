@@ -2,6 +2,8 @@ import Salary from '../models/salaryModel.js';
 import Salarys from '../models/yenisalaryModel.js';
 import User from '../models/userModel.js';
 import ConfirmedCart from '../models/confirmedCartModel.js';
+import referralStates from '../models/yeniQazancModel.js';
+
 
 export const getMyTeamSalaries = async (req, res) => {
   try {
@@ -53,6 +55,34 @@ export const getMyTeamSalariess = async (req, res) => {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 };
+
+export const getMyTeamSalar = async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user._id);
+    const referralCode = currentUser.referralCode;
+
+    if (!referralCode) return res.status(400).json({ message: 'Referral kodunuz bulunamadı.' });
+
+    // Kullanıcının zincirindeki tüm kişileri bul
+    const teamMembers = await User.find({ referralChain: referralCode }).select('_id');
+
+    // Takım üyelerinin ID'lerini al
+    const teamIds = teamMembers.map(u => u._id);
+
+    // Kendi ID'sini de ekle
+    teamIds.push(req.user._id);
+
+    // Bu kişilere ait maaş kayıtlarını getir (kendi maaşı + takım maaşları)
+    const salaries = await referralStates.find({ userId: { $in: teamIds } });
+
+    res.status(200).json(salaries);
+
+  } catch (err) {
+    console.error("Maaş çekme hatası:", err);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+};
+
 
 
 export const getUserProduct = async (req, res) => {
