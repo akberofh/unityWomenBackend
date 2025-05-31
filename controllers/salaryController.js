@@ -37,18 +37,23 @@ export const getMyTeamSalariess = async (req, res) => {
     // Kullanıcının zincirindeki tüm kişileri bul
     const teamMembers = await User.find({ referralChain: referralCode }).select('_id');
 
+    // Takım üyelerinin ID'lerini al
     const teamIds = teamMembers.map(u => u._id);
 
-    // Bu kişilere ait salary kayıtlarını getir
+    // Kendi ID'sini de ekle
+    teamIds.push(req.user._id);
+
+    // Bu kişilere ait maaş kayıtlarını getir (kendi maaşı + takım maaşları)
     const salaries = await Salarys.find({ userId: { $in: teamIds } });
 
     res.status(200).json(salaries);
 
   } catch (err) {
-    console.error("Maas çekme hatası:", err);
+    console.error("Maaş çekme hatası:", err);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 };
+
 
 export const getUserProduct = async (req, res) => {
   try {

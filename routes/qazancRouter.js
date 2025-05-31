@@ -17,7 +17,7 @@ router.get('/qazanc',userControlAuth, adminControlAuth,  async (req, res) => {
 });
 
 
-router.get('/Historyqazanc',userControlAuth, adminControlAuth,  async (req, res) => {
+router.get('/Historyqazanc',   async (req, res) => {
     try {
         const salaries = await referralStates.find().sort({});
         res.json(salaries);
