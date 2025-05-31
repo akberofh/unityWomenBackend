@@ -1,60 +1,48 @@
 import User from '../models/userModel.js';
-import SystemSettings from '../models/systemSettingsModel.js';
 import ReferralStats from '../models/yeniQazancModel.js';
 
 
-function generatePeriods(startDate, endDate) {
-  const periods = [];
-  let currentStart = new Date(startDate);
-  currentStart.setHours(0, 0, 0, 0);
+function generatePeriods() {
+  const now = new Date(); // bugünün tarihi
 
-  while (currentStart < endDate) {
-    const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 6);
-    currentEnd.setHours(23, 59, 59, 999);
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // ayın başı
+  const end = new Date(); // bugün
 
-    periods.push({
-      start: new Date(currentStart),
-      end: new Date(currentEnd > endDate ? endDate : currentEnd)
-    });
+  const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const endAz = new Date(end.getTime() + 4 * 60 * 60 * 1000);
+  endAz.setHours(23, 59, 59, 999);
 
-    currentStart.setDate(currentStart.getDate() + 7);
-    currentStart.setHours(0, 0, 0, 0);
-  }
-
-  return periods;
+  return [{ start: startAz, end: endAz }];
 }
 
 export const historyQazanc = async () => {
-  
-  
-  
-  const systemSettings = await SystemSettings.findOne();
-  const systemStart = new Date(systemSettings.referralSystemStartDate);
-  const now = new Date();
-  
-  const excludedStart = new Date("2025-04-01T00:00:00Z");
-  const excludedEnd = new Date("2025-04-30T23:59:59Z");
-  
+
+
+
+
+
+
+
   const allPaidUsers = await User.find({ payment: true });
-  
+
   for (const user of allPaidUsers) {
     try {
-    const referralCode = user.referralCode;
-    
-    if (!referralCode) continue;
-    
-      const invitedAll = await User.find({ referralLinkOwner: referralCode });
-      const invitedPaid = invitedAll.filter((u) => {
-        const created = new Date(u.createdAt);
-        return u.payment === true && (created < excludedStart || created > excludedEnd);
-      });
-      
+      const referralCode = user.referralCode;
 
-   
+      if (!referralCode) continue;
+
+      const invitedAll = await User.find({ referralLinkOwner: referralCode });
+      // 2. Versiya
+      const invitedPaid = invitedAll.filter(u => {
+        return u.payment === true && u.isVerified !== true;
+      });
+
+
+
+
 
       const totalEarned = invitedPaid.length * 2;
-      const periods = generatePeriods(systemStart, now);
+      const periods = generatePeriods();
 
       const periodEarnings = periods.map(period => {
         const usersInPeriod = invitedPaid.filter(u =>
@@ -92,12 +80,12 @@ export const historyQazanc = async () => {
       await statDoc.save();
     }
     catch (err) {
-    console.error("Hata:", err);
-  } 
+      console.error("Hata:", err);
+    }
 
-  } 
+  }
 
-    console.log("İşlem tamamlandı:", statDoc.length);
+  console.log("İşlem tamamlandı:", statDoc.length);
 
 };
 
