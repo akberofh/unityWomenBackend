@@ -75,7 +75,7 @@ router.put(
         }
 
       } else if (userRole === 'adminstrator') {
-        updatedData = { payment };
+        updatedData = { payment , isVerified };
       }
 
       // Gereksiz boş alanları temizle
