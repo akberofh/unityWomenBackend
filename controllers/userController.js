@@ -397,27 +397,17 @@ const getReferredBy = async (req, res) => {
   }
 };
 
-function generatePeriods(startDate, endDate) {
-  const periods = [];
-  let currentStart = new Date(startDate);
-  currentStart.setHours(0, 0, 0, 0);
+function generatePeriods() {
+  const now = new Date(); // bugünün tarihi
 
-  while (currentStart < endDate) {
-    const currentEnd = new Date(currentStart);
-    currentEnd.setDate(currentEnd.getDate() + 6); // 15 gün (bugün dahil)
-    currentEnd.setHours(23, 59, 59, 999);
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // ayın başı
+  const end = new Date(); // bugün
 
-    periods.push({
-      start: new Date(currentStart),
-      end: new Date(currentEnd > endDate ? endDate : currentEnd)
-    });
+  const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const endAz = new Date(end.getTime() + 4 * 60 * 60 * 1000);
+  endAz.setHours(23, 59, 59, 999);
 
-    // bir sonraki dönem
-    currentStart.setDate(currentStart.getDate() + 7);
-    currentStart.setHours(0, 0, 0, 0);
-  }
-
-  return periods;
+  return [{ start: startAz, end: endAz }];
 }
 
 function generatePeriodss() {
@@ -446,30 +436,22 @@ const getReferralStats = async (req, res) => {
       return res.status(404).json({ message: "Ödəniş edilməyib. Mükafat hesablana bilməz." });
     }
 
-    const systemSettings = await SystemSettings.findOne();
-    const systemStart = new Date(systemSettings.referralSystemStartDate);
-    const now = new Date();
 
-    // Tarih aralığını belirle
-    const excludedStart = new Date("2025-04-01T00:00:00Z");
-    const excludedEnd = new Date("2025-04-30T23:59:59Z");
 
-    // Davet edilen tüm kullanıcıları çek
+
+
     const invitedUser = await User.find({ referralLinkOwner: referralCode });
 
     // Sadece ödeme yapmış ve excluded aralığında oluşturulmamış olanları dahil et
     const invitedUsers = await User.find({
       referralLinkOwner: referralCode,
       payment: true,
-      $or: [
-        { createdAt: { $lt: excludedStart } },
-        { createdAt: { $gt: excludedEnd } }
-      ]
+
     });
 
     const totalEarned = invitedUsers.length * 2;
 
-    const periods = generatePeriods(systemStart, now);
+    const periods = generatePeriods();
 
     const periodEarnings = periods.map(period => {
       const usersInPeriod = invitedUsers.filter(u =>
