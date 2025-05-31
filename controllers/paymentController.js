@@ -41,7 +41,7 @@ const qolbaqAdd = async (req, res) => {
 
 const getQolbaq = async (req, res) => {
   try {
-    const allPayments = await PaymentModel.find({ confirmedCartId: req.params.confirmedCartId}); // ✅ find yerine findById yanlış olur!
+    const allPayments = await PaymentModel.find({ confirmedCartId: req.params.confirmedCartId}); 
     res.json(allPayments);
   } catch (error) {
     console.error(error);

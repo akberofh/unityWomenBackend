@@ -98,12 +98,17 @@ export const getUserProduct = async (req, res) => {
   }
 };
 
+
+
 export const getConfirmcard = async (req, res) => {
   try {
-      const alConfirmcard = await ConfirmedCart.find().select('products photo paymentStatus gathered confirmedAt user_id orderCode');
-      res.json({ alConfirmcard });
+    const alConfirmcard = await ConfirmedCart.find()
+      .select('products photo paymentStatus gathered confirmedAt user_id orderCode')
+      .sort({ confirmedAt: -1 }); // -1 = azalan sıralama (yeni > eski)
+
+    res.json({ alConfirmcard });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
