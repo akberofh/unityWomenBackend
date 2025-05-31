@@ -1,33 +1,18 @@
 import User from '../models/userModel.js';
-import SystemSettings from '../models/systemSettingsModel.js';
 import Salary from '../models/yenisalaryModel.js';
 
 
-function generatePeriods(startDate, endDate) {
-  const periods = [];
-  let current = new Date(startDate);
-  current.setDate(1); // Her zaman ayın 1'i ile başla
-  current.setHours(0, 0, 0, 0);
+function generatePeriods() {
+  const now = new Date(); // bugünün tarihi
 
-  while (current <= endDate) {
-    const start = new Date(current);
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // ayın başı
+  const end = new Date(); // bugün
 
-    // Aynı ayın son günü
-    const end = new Date(current.getFullYear(), current.getMonth() + 1, 0);
-    end.setHours(23, 59, 59, 999);
+  const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const endAz = new Date(end.getTime() + 4 * 60 * 60 * 1000);
+  endAz.setHours(23, 59, 59, 999);
 
-    periods.push({
-      start,
-      end: end > endDate ? new Date(endDate) : end,
-    });
-
-    // Bir sonraki ayın 1. gününe geç
-    current.setMonth(current.getMonth() + 1);
-    current.setDate(1);
-    current.setHours(0, 0, 0, 0);
-  }
-
-  return periods;
+  return [{ start: startAz, end: endAz }];
 }
 
 
@@ -36,10 +21,8 @@ function generatePeriods(startDate, endDate) {
 export const history = async () => {
   
   const users = await User.find({ payment: true });
-  const systemSettings = await SystemSettings.findOne();
-  const systemStart = new Date(systemSettings.referralSystemStartDate);
-  const now = new Date();
-  const periods = generatePeriods(systemStart, now);
+
+  const periods = generatePeriods();
   
   const results = [];
   
