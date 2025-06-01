@@ -398,28 +398,26 @@ const getReferredBy = async (req, res) => {
 };
 
 function generatePeriods() {
-  const now = new Date();
+  const now = new Date(); // bugünün tarihi
 
-  const start = new Date(now.getFullYear(), now.getMonth(), 1); // Ayın başı
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Sadece tarih, saat 00:00
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // ayın başı
+  const end = new Date(); // bugün
 
-  // UTC+4 eklenirken sadece tarihi hedef alıyoruz, saat kaymasını engellemek için
-  const startAz = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate(), 4));
-  const endAz = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 4));
+  const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const endAz = new Date(end.getTime() + 4 * 60 * 60 * 1000);
   endAz.setHours(23, 59, 59, 999);
 
   return [{ start: startAz, end: endAz }];
 }
 
 function generatePeriodss() {
-  const now = new Date();
+  const now = new Date(); // bugünün tarihi
 
-  const start = new Date(now.getFullYear(), now.getMonth(), 1); // Ayın başı
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Sadece tarih, saat 00:00
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // ayın başı
+  const end = new Date(); // bugün
 
-  // UTC+4 eklenirken sadece tarihi hedef alıyoruz, saat kaymasını engellemek için
-  const startAz = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate(), 4));
-  const endAz = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 4));
+  const startAz = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const endAz = new Date(end.getTime() + 4 * 60 * 60 * 1000);
   endAz.setHours(23, 59, 59, 999);
 
   return [{ start: startAz, end: endAz }];

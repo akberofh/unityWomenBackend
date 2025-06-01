@@ -12,10 +12,16 @@ mongoose.connect('mongodb+srv://pasomap598:cWBMlcnEj5xiGLTw@akberof.ku4tf.mongod
     try {
       const result = await User.updateMany(
         { payment: true },
-        { $set: { payment: false } }
+        {
+          $set: {
+            payment: false,
+            dailyEarnings: 0,
+            dailyEarningsDate: null
+          }
+        }
       );
 
-      console.log(`🔁 ${result.modifiedCount} kullanıcının isVerified alanı true olarak güncellendi.`);
+      console.log(`🔁 ${result.modifiedCount} kullanıcının alanları güncellendi (payment: false, dailyEarnings: 0, dailyEarningsDate: null).`);
     } catch (err) {
       console.error('❌ Güncelleme hatası:', err);
     } finally {
