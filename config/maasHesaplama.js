@@ -2,6 +2,7 @@ import User from '../models/userModel.js';
 import Salary from '../models/salaryModel.js';
 
 
+
 function generatePeriods() {
   const now = new Date(); 
 
@@ -14,6 +15,7 @@ function generatePeriods() {
 
   return [{ start: startAz, end: endAz }];
 }
+
 
 
 
