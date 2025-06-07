@@ -576,14 +576,13 @@ export const getUserSalary = async (req, res) => {
         return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur." });
       }
 
-      if (oneSideTotal >= 12000) salaryRate = 0.005;
-      else if (oneSideTotal >= 10000) salaryRate = 0.006;
-      else if (oneSideTotal >= 4000) salaryRate = 0.009;
-      else if (oneSideTotal >= 2000) salaryRate = 0.012;
-      else if (oneSideTotal >= 1000) salaryRate = 0.015;
-      else if (oneSideTotal >= 500) salaryRate = 0.018;
-      else if (oneSideTotal >= 200) salaryRate = 0.018;
-      else if (oneSideTotal >= 100) salaryRate = 0.03;
+      if (oneSideTotal >= 1000) salaryRate = 0.003;
+      else if (oneSideTotal >= 500) salaryRate = 0.005;
+      else if (oneSideTotal >= 250) salaryRate = 0.009;
+      else if (oneSideTotal >= 150) salaryRate = 0.01;
+      else if (oneSideTotal >= 100) salaryRate = 0.02;
+
+
 
       if (oneSideTotal >= 13000) rank = "Qizil Direktor";
       else if (oneSideTotal >= 10000) rank = "Bas Direktor";
