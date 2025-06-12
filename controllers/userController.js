@@ -599,7 +599,7 @@ export const getUserSalary = async (req, res) => {
       salary = (oneSideTotal * salaryRate).toFixed(2);
     } else {
       if (total < 60) {
-        return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur." });
+        return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur" });
       }
 
       const big = Math.max(rightTotal, leftTotal);
