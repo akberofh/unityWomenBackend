@@ -19,15 +19,15 @@ function generatePeriods() {
 
 
 export const history = async () => {
-  
+
   const users = await User.find({ payment: true });
 
   const periods = generatePeriods();
-  
+
   const results = [];
-  
+
   for (const user of users) {
-      try {
+    try {
       const referralCode = user.referralCode;
       const children = await User.find({ referredBy: referralCode });
       const right = children[0];
@@ -55,28 +55,40 @@ export const history = async () => {
       const hasRight = right && rightTotal > 0;
       const hasLeft = left && leftTotal > 0;
 
-      let mode = hasRight && hasLeft ? "Dual Side" : "Single Side";
+
+
+      const isSeverelyImbalanced = hasRight && hasLeft && (Math.max(rightTotal, leftTotal) / (rightTotal + leftTotal)) > 0.99;
+
+      let mode = "";
       let salaryRate = 0;
       let salary = 0;
       let rank = "";
       let splitFactor = 1;
-      let side = hasRight ? "Right" : "Left";
+      let side = "";
 
-      const oneSideTotal = (hasRight ? rightTotal : leftTotal) + selfEarnings;
+      if (!hasRight || !hasLeft || isSeverelyImbalanced) {
 
-      if (!hasRight || !hasLeft) {
-        if (oneSideTotal < 100) continue;
 
-        if (oneSideTotal >= 12000) salaryRate = 0.005;
-        else if (oneSideTotal >= 10000) salaryRate = 0.006;
-        else if (oneSideTotal >= 4000) salaryRate = 0.009;
-        else if (oneSideTotal >= 2000) salaryRate = 0.012;
-        else if (oneSideTotal >= 1000) salaryRate = 0.015;
-        else if (oneSideTotal >= 500) salaryRate = 0.018;
-        else if (oneSideTotal >= 200) salaryRate = 0.018;
-        else if (oneSideTotal >= 100) salaryRate = 0.03;
+        mode = "Single Side";
 
-        if (oneSideTotal >= 13000 ) rank = "Qizil Direktor";
+        // Hesaplama için her zaman BÜYÜK olan kolu baz al
+        const oneSideTotal = Math.max(rightTotal, leftTotal) + selfEarnings;
+        side = rightTotal > leftTotal ? "Right" : "Left";
+
+
+                if (oneSideTotal < 100) continue;
+
+
+
+        if (oneSideTotal >= 1000) salaryRate = 0.003;
+        else if (oneSideTotal >= 500) salaryRate = 0.005;
+        else if (oneSideTotal >= 250) salaryRate = 0.009;
+        else if (oneSideTotal >= 150) salaryRate = 0.01;
+        else if (oneSideTotal >= 100) salaryRate = 0.02;
+
+
+
+        if (oneSideTotal >= 13000) rank = "Qizil Direktor";
         else if (oneSideTotal >= 10000) rank = "Bas Direktor";
         else if (oneSideTotal >= 6001) rank = "Direktor";
         else if (oneSideTotal >= 4000) rank = "Bas Lider";
@@ -90,14 +102,24 @@ export const history = async () => {
 
         salary = (oneSideTotal * salaryRate).toFixed(2);
       } else {
-        if (total < 60) continue;
+
+
+        mode = "Dual Side";
+        side = "Right & Left";
 
         const big = Math.max(rightTotal, leftTotal);
         const ratio = big / (rightTotal + leftTotal);
 
-        if (ratio >= 0.96) splitFactor = 3;
-        else if (ratio >= 0.90) splitFactor = 2.5;
-        else if (ratio >= 0.80) splitFactor = 2;
+
+                if (total < 60) continue;
+
+
+        if (ratio >= 0.99) splitFactor = 20;
+        else if (ratio >= 0.97) splitFactor = 11;
+        else if (ratio >= 0.95) splitFactor = 8.5;
+        else if (ratio >= 0.90) splitFactor = 4;
+        else if (ratio >= 0.85) splitFactor = 3.5;
+        else if (ratio >= 0.80) splitFactor = 2.8;
 
         if (total >= 12000) salaryRate = 0.10;
         else if (total >= 8000) salaryRate = 0.094;
@@ -135,11 +157,16 @@ export const history = async () => {
         const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
         const periodRightTotal = usersInThisPeriod.filter(u => rightChain.includes(u) || u._id.equals(right?._id)).reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
         const periodLeftTotal = usersInThisPeriod.filter(u => leftChain.includes(u) || u._id.equals(left?._id)).reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+        const periodSelfEarnings = usersInThisPeriod.find(u => u._id.equals(user._id))?.dailyEarnings || 0;
 
-        const periodSalary =
-          mode === "Single Side"
-            ? (periodTotal * salaryRate).toFixed(2)
-            : ((periodTotal * salaryRate) / splitFactor).toFixed(2);
+        let periodSalary = 0;
+
+        if (mode === "Single Side") {
+          const periodOneSideTotal = Math.max(periodRightTotal, periodLeftTotal) + periodSelfEarnings;
+          periodSalary = (periodOneSideTotal * salaryRate).toFixed(2);
+        } else {
+          periodSalary = ((periodTotal * salaryRate) / splitFactor).toFixed(2);
+        }
 
         return {
           periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
@@ -159,6 +186,9 @@ export const history = async () => {
         };
       });
 
+
+      const responseTotal = mode === "Single Side" ? Math.max(rightTotal, leftTotal) + selfEarnings : total;
+
       results.push({
         userId: user._id,
         name: user.name,
@@ -167,7 +197,7 @@ export const history = async () => {
         referralChain: user.referralChain,
         mode,
         side,
-        total: mode === "Single Side" ? oneSideTotal : total,
+        total: responseTotal,
         salary: Number(salary),
         rank,
         rate: salaryRate * 100,
@@ -177,9 +207,11 @@ export const history = async () => {
         leftTotal
       });
 
-      let a=  await Salary.create({
+
+
+      let a = await Salary.create({
         userId: user._id,
-        totalEarnings: mode === "Single Side" ? oneSideTotal : total,
+        totalEarnings: responseTotal,
         salary: Number(salary),
         rank,
         salaryRate: salaryRate * 100,
@@ -203,8 +235,8 @@ export const history = async () => {
         }))
       });
 
-      
-    }catch (err) {
+
+    } catch (err) {
       console.error(`Hata: ${user.name} için hesaplama yapılamadı.`, err);
     }
 

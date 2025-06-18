@@ -533,7 +533,6 @@ export const getUserSalary = async (req, res) => {
       return res.status(403).json({ message: "Ödəniş edilməyib. Maaş hesablana bilməz." });
     }
 
-
     const periods = generatePeriodss();
     const referral = user.referralCode;
     const children = await User.find({ referredBy: referral });
@@ -562,16 +561,25 @@ export const getUserSalary = async (req, res) => {
     const hasRight = right && rightTotal > 0;
     const hasLeft = left && leftTotal > 0;
 
-    let mode = hasRight && hasLeft ? "Dual Side" : "Single Side";
+    // YENİ: Kollar arasında ciddi bir dengesizlik olup olmadığını kontrol et
+    const isSeverelyImbalanced = hasRight && hasLeft && (Math.max(rightTotal, leftTotal) / (rightTotal + leftTotal)) > 0.99;
+
+    let mode = "";
     let salaryRate = 0;
     let salary = 0;
     let rank = "";
     let splitFactor = 1;
-    let side = hasRight ? "Right" : "Left";
+    let side = "";
 
-    const oneSideTotal = (hasRight ? rightTotal : leftTotal) + selfEarnings;
+    // GÜNCELLENDİ: Tek kol mantığının ne zaman çalışacağını belirleyen koşul güncellendi.
+    // Artık tek kol olmaması VEYA kollar arasında aşırı dengesizlik olması durumunda bu blok çalışacak.
+    if (!hasRight || !hasLeft || isSeverelyImbalanced) {
+      mode = "Single Side";
 
-    if (!hasRight || !hasLeft) {
+      // Hesaplama için her zaman BÜYÜK olan kolu baz al
+      const oneSideTotal = Math.max(rightTotal, leftTotal) + selfEarnings;
+      side = rightTotal > leftTotal ? "Right" : "Left";
+
       if (oneSideTotal < 100) {
         return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur." });
       }
@@ -598,6 +606,10 @@ export const getUserSalary = async (req, res) => {
 
       salary = (oneSideTotal * salaryRate).toFixed(2);
     } else {
+      // Bu blok artık sadece dengeli veya dengeye yakın çift kollar için çalışacak
+      mode = "Dual Side";
+      side = "Right & Left";
+
       if (total < 60) {
         return res.json({ message: "Maaş hesablamaq üçün kifayət qədər qazanc yoxdur" });
       }
@@ -605,9 +617,13 @@ export const getUserSalary = async (req, res) => {
       const big = Math.max(rightTotal, leftTotal);
       const ratio = big / (rightTotal + leftTotal);
 
-      if (ratio >= 0.96) splitFactor = 3;
-      else if (ratio >= 0.90) splitFactor = 2.5;
-      else if (ratio >= 0.80) splitFactor = 2;
+      // GÜNCELLENDİ: ratio >= 0.99 durumu artık yukarıda ele alındığı için buradan kaldırıldı.
+      if (ratio >= 0.99) splitFactor = 20;
+      else if (ratio >= 0.97) splitFactor = 11;
+      else if (ratio >= 0.95) splitFactor = 8.5;
+      else if (ratio >= 0.90) splitFactor = 4;
+      else if (ratio >= 0.85) splitFactor = 3.5;
+      else if (ratio >= 0.80) splitFactor = 2.8;
 
       if (total >= 12000) salaryRate = 0.10;
       else if (total >= 8000) salaryRate = 0.094;
@@ -645,11 +661,17 @@ export const getUserSalary = async (req, res) => {
       const periodTotal = usersInThisPeriod.reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
       const periodRightTotal = usersInThisPeriod.filter(u => rightChain.includes(u) || u._id.equals(right?._id)).reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
       const periodLeftTotal = usersInThisPeriod.filter(u => leftChain.includes(u) || u._id.equals(left?._id)).reduce((sum, u) => sum + (u.dailyEarnings || 0), 0);
+      const periodSelfEarnings = usersInThisPeriod.find(u => u._id.equals(user._id))?.dailyEarnings || 0;
 
-      const periodSalary =
-        mode === "Single Side"
-          ? (periodTotal * salaryRate).toFixed(2)
-          : ((periodTotal * salaryRate) / splitFactor).toFixed(2);
+      let periodSalary = 0;
+
+      // Karmaşık ternary yerine temiz bir if-else yapısı
+      if (mode === "Single Side") {
+        const periodOneSideTotal = Math.max(periodRightTotal, periodLeftTotal) + periodSelfEarnings;
+        periodSalary = (periodOneSideTotal * salaryRate).toFixed(2);
+      } else {
+        periodSalary = ((periodTotal * salaryRate) / splitFactor).toFixed(2);
+      }
 
       return {
         periodLabel: `${period.start.toLocaleDateString('tr-TR')} - ${period.end.toLocaleDateString('tr-TR')}`,
@@ -667,13 +689,16 @@ export const getUserSalary = async (req, res) => {
       };
     });
 
+    // GÜNCELLENDİ: Dönüş verisindeki `total` değeri, hesaplama moduna göre ayarlandı.
+    const responseTotal = mode === "Single Side" ? Math.max(rightTotal, leftTotal) + selfEarnings : total;
+
     return res.json({
       userId: user._id,
       name: user.name,
       email: user.email,
       mode,
       side,
-      total: mode === "Single Side" ? oneSideTotal : total,
+      total: responseTotal,
       salary: Number(salary),
       rank,
       rate: salaryRate * 100,
