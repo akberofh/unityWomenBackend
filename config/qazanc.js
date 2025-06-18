@@ -77,7 +77,7 @@ export const run = async () => {
       await statDoc.save();
     }
     catch (err) {
-    console.error("Hata:", err);
+    console.error("xeta:", err);
   } 
 
   } 
