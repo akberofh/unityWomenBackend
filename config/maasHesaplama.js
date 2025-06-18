@@ -79,7 +79,7 @@ export const getAllUsersSalary = async () => {
         side = rightTotal > leftTotal ? "Right" : "Left";
 
 
-                if (oneSideTotal < 100) continue;
+        if (oneSideTotal < 100) continue;
 
 
 
@@ -114,15 +114,14 @@ export const getAllUsersSalary = async () => {
         const ratio = big / (rightTotal + leftTotal);
 
 
-                if (total < 60) continue;
+        if (total < 60) continue;
 
 
-        if (ratio >= 0.99) splitFactor = 20;
-        else if (ratio >= 0.97) splitFactor = 11;
-        else if (ratio >= 0.95) splitFactor = 8.5;
-        else if (ratio >= 0.90) splitFactor = 4;
-        else if (ratio >= 0.85) splitFactor = 3.5;
-        else if (ratio >= 0.80) splitFactor = 2.8;
+        if (ratio >= 0.97) splitFactor = 20;
+        else if (ratio >= 0.95) splitFactor = 11;
+        else if (ratio >= 0.90) splitFactor = 8.5;
+        else if (ratio >= 0.85) splitFactor = 4;
+        else if (ratio >= 0.80) splitFactor = 3.5;
 
         if (total >= 12000) salaryRate = 0.10;
         else if (total >= 8000) salaryRate = 0.094;
