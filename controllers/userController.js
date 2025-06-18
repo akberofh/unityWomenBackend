@@ -561,24 +561,24 @@ export const getUserSalary = async (req, res) => {
     const hasRight = right && rightTotal > 0;
     const hasLeft = left && leftTotal > 0;
 
-    // YENİ: Kollar arasında ciddi bir dengesizlik olup olmadığını kontrol et
-    const isSeverelyImbalanced = hasRight && hasLeft && (Math.max(rightTotal, leftTotal) / (rightTotal + leftTotal)) > 0.99;
-    // Şərt 2: Balanssızlıq 99%-dən çox olmalıdır
+    const legsTotal = rightTotal + leftTotal;
+
+    const isSeverelyImbalanced =
+      hasRight &&
+      hasLeft &&
+      (legsTotal > 300) &&
+      ((Math.max(rightTotal, leftTotal) / legsTotal) > 0.99);
 
 
     let mode = "";
     let salaryRate = 0;
     let salary = 0;
     let rank = "";
-    let splitFactor = 1;
+    let splitFactor = 1; // Varsayılan değer
     let side = "";
 
-    // GÜNCELLENDİ: Tek kol mantığının ne zaman çalışacağını belirleyen koşul güncellendi.
-    // Artık tek kol olmaması VEYA kollar arasında aşırı dengesizlik olması durumunda bu blok çalışacak.
     if (!hasRight || !hasLeft || isSeverelyImbalanced) {
       mode = "Single Side";
-
-      // Hesaplama için her zaman BÜYÜK olan kolu baz al
       const oneSideTotal = Math.max(rightTotal, leftTotal) + selfEarnings;
       side = rightTotal > leftTotal ? "Right" : "Left";
 
@@ -591,8 +591,6 @@ export const getUserSalary = async (req, res) => {
       else if (oneSideTotal >= 250) salaryRate = 0.009;
       else if (oneSideTotal >= 150) salaryRate = 0.01;
       else if (oneSideTotal >= 100) salaryRate = 0.02;
-
-
 
       if (oneSideTotal >= 13000) rank = "Qizil Direktor";
       else if (oneSideTotal >= 10000) rank = "Bas Direktor";
@@ -608,7 +606,7 @@ export const getUserSalary = async (req, res) => {
 
       salary = (oneSideTotal * salaryRate).toFixed(2);
     } else {
-      // Bu blok artık sadece dengeli veya dengeye yakın çift kollar için çalışacak
+      // Çift Kol (Dual Side) mantığı
       mode = "Dual Side";
       side = "Right & Left";
 
@@ -617,15 +615,27 @@ export const getUserSalary = async (req, res) => {
       }
 
       const big = Math.max(rightTotal, leftTotal);
-      const ratio = big / (rightTotal + leftTotal);
+      // Hata önlemek için legsTotal'ın 0'dan büyük olduğunu kontrol edelim
+      const ratio = legsTotal > 0 ? big / legsTotal : 0;
 
-      // GÜNCELLENDİ: ratio >= 0.99 durumu artık yukarıda ele alındığı için buradan kaldırıldı.
-      if (ratio >= 0.97) splitFactor = 20;
-      else if (ratio >= 0.95) splitFactor = 11;
-      else if (ratio >= 0.90) splitFactor = 8.5;
-      else if (ratio >= 0.85) splitFactor = 4;
-      else if (ratio >= 0.80) splitFactor = 3.5;
+      // --- GÜNCELLENMİŞ BÖLÜM BAŞLANGICI ---
+      // İsteğiniz doğrultusunda, kolların toplamına göre farklı splitFactor hesaplaması
+      if (legsTotal < 300) {
+        // YENİ: Kolların toplamı 300'den azsa kullanılacak splitFactor mantığı
+        if (ratio >= 0.96) splitFactor = 3;
+        else if (ratio >= 0.90) splitFactor = 2.5;
+        else if (ratio >= 0.80) splitFactor = 2;
+      } else {
+        // MEVCUT: Kolların toplamı 300 veya daha fazlaysa kullanılacak splitFactor mantığı
+        if (ratio >= 0.97) splitFactor = 20;
+        else if (ratio >= 0.95) splitFactor = 11;
+        else if (ratio >= 0.90) splitFactor = 8.5;
+        else if (ratio >= 0.85) splitFactor = 4;
+        else if (ratio >= 0.80) splitFactor = 3.5;
+      }
+      // --- GÜNCELLENMİŞ BÖLÜM SONU ---
 
+      // Salary Rate (Maaş Oranı) Hesaplaması (Her iki durum için de ortak)
       if (total >= 12000) salaryRate = 0.10;
       else if (total >= 8000) salaryRate = 0.094;
       else if (total >= 6000) salaryRate = 0.086;
@@ -635,6 +645,7 @@ export const getUserSalary = async (req, res) => {
       else if (total >= 250) salaryRate = 0.07;
       else if (total >= 60) salaryRate = 0.067;
 
+      // Rank (Rütbe) Hesaplaması (Her iki durum için de ortak)
       if (total >= 13000) rank = "Qizil Direktor";
       else if (total >= 10000) rank = "Bas Direktor";
       else if (total >= 6001) rank = "Direktor";
@@ -647,9 +658,11 @@ export const getUserSalary = async (req, res) => {
       else if (total >= 60) rank = "Meslehetci";
       else rank = "Yeni üzv";
 
+      // Nihai Maaş Hesaplaması
       salary = ((total * salaryRate) / splitFactor).toFixed(2);
     }
 
+    // Periyodlara göre maaş hesaplama kısmı (değişiklik yok)
     const usersInPeriod = [...rightChain, ...leftChain];
     if (right) usersInPeriod.push(right);
     if (left) usersInPeriod.push(left);
@@ -666,7 +679,6 @@ export const getUserSalary = async (req, res) => {
 
       let periodSalary = 0;
 
-      // Karmaşık ternary yerine temiz bir if-else yapısı
       if (mode === "Single Side") {
         const periodOneSideTotal = Math.max(periodRightTotal, periodLeftTotal) + periodSelfEarnings;
         periodSalary = (periodOneSideTotal * salaryRate).toFixed(2);
@@ -690,7 +702,6 @@ export const getUserSalary = async (req, res) => {
       };
     });
 
-    // GÜNCELLENDİ: Dönüş verisindeki `total` değeri, hesaplama moduna göre ayarlandı.
     const responseTotal = mode === "Single Side" ? Math.max(rightTotal, leftTotal) + selfEarnings : total;
 
     return res.json({
