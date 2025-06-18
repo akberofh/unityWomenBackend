@@ -562,15 +562,10 @@ export const getUserSalary = async (req, res) => {
     const hasLeft = left && leftTotal > 0;
 
     // YENİ: Kollar arasında ciddi bir dengesizlik olup olmadığını kontrol et
-    const legsTotal = rightTotal + leftTotal; // Qolların cəmini bir dəyişəndə saxlayaq
+    const isSeverelyImbalanced = hasRight && hasLeft && (Math.max(rightTotal, leftTotal) / (rightTotal + leftTotal)) > 0.99;
+    // Şərt 2: Balanssızlıq 99%-dən çox olmalıdır
 
-    const isSeverelyImbalanced =
-      hasRight &&
-      hasLeft &&
-      (legsTotal > 300) && // Şərt 1: Qolların cəmi 300-dən böyük olmalıdır
-      ((Math.max(rightTotal, leftTotal) / legsTotal) > 0.99); // Şərt 2: Balanssızlıq 99%-dən çox olmalıdır
 
-      
     let mode = "";
     let salaryRate = 0;
     let salary = 0;
