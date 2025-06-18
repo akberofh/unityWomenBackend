@@ -60,8 +60,14 @@ export const getAllUsersSalary = async () => {
 
 
 
-      const isSeverelyImbalanced = hasRight && hasLeft && (Math.max(rightTotal, leftTotal) / (rightTotal + leftTotal)) > 0.99;
+      const legsTotal = rightTotal + leftTotal;
 
+      const isSeverelyImbalanced =
+        hasRight &&
+        hasLeft &&
+        (legsTotal > 300) &&
+        ((Math.max(rightTotal, leftTotal) / legsTotal) > 0.99);
+        
       let mode = "";
       let salaryRate = 0;
       let salary = 0;
@@ -111,17 +117,26 @@ export const getAllUsersSalary = async () => {
         side = "Right & Left";
 
         const big = Math.max(rightTotal, leftTotal);
-        const ratio = big / (rightTotal + leftTotal);
+         const ratio = legsTotal > 0 ? big / legsTotal : 0;
+
+                        if (total < 60) continue;
 
 
-        if (total < 60) continue;
-
-
-        if (ratio >= 0.97) splitFactor = 20;
-        else if (ratio >= 0.95) splitFactor = 11;
-        else if (ratio >= 0.90) splitFactor = 8.5;
-        else if (ratio >= 0.85) splitFactor = 4;
-        else if (ratio >= 0.80) splitFactor = 3.5;
+        // --- GÜNCELLENMİŞ BÖLÜM BAŞLANGICI ---
+        // İsteğiniz doğrultusunda, kolların toplamına göre farklı splitFactor hesaplaması
+        if (legsTotal < 300) {
+          // YENİ: Kolların toplamı 300'den azsa kullanılacak splitFactor mantığı
+          if (ratio >= 0.96) splitFactor = 3;
+          else if (ratio >= 0.90) splitFactor = 2.5;
+          else if (ratio >= 0.80) splitFactor = 2;
+        } else {
+          // MEVCUT: Kolların toplamı 300 veya daha fazlaysa kullanılacak splitFactor mantığı
+          if (ratio >= 0.97) splitFactor = 20;
+          else if (ratio >= 0.95) splitFactor = 11;
+          else if (ratio >= 0.90) splitFactor = 8.5;
+          else if (ratio >= 0.85) splitFactor = 4;
+          else if (ratio >= 0.80) splitFactor = 3.5;
+        }
 
         if (total >= 12000) salaryRate = 0.10;
         else if (total >= 8000) salaryRate = 0.094;
